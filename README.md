@@ -14,12 +14,17 @@ $ npm install
 
 $ composer require symfony/ux-react
 $ npm install
-$ npm install -D @babel/preset-react
+$ npm install -D @babel/preset-react; # ux-react
 $ npm run dev; # compile assets
+
+$ #composer require --dev symfony/maker-bundle
+$ bin/console make:controller ReactController
 ```
 
 ```
 $ symfony serve -d
-$ npm run watch; # development server
 $ symfony local:server:stop
+
+$ npm run watch; # watch and compile assets 
+$ npm run dev-server --live-reload; # development server
 ```

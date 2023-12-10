@@ -73,6 +73,13 @@ Encore
 
     // uncomment if you're having problems with a jQuery plugin
     //.autoProvidejQuery()
+
+    .configureDevServerOptions(options => { // liveReload: symfony.com/doc/6.4/frontend/encore/dev-server.html
+        options.host = '0.0.0.0'; // fix: connection reset with docker
+        //options.liveReload = true; // use command line option '--live-reload'
+        //options.static = {watch: false}; // false: disable php liveReload
+        options.watchFiles = {paths: ['src/**/*.php', 'templates/**/*']};
+    })
 ;
 
 module.exports = Encore.getWebpackConfig();
