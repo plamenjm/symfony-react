@@ -19,6 +19,8 @@ $ npm run dev; # compile assets
 
 $ #composer require --dev symfony/maker-bundle
 $ bin/console make:controller ReactController
+
+$ composer require api; # not needed yet
 ```
 
 ```
