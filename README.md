@@ -21,9 +21,13 @@ $ #composer require --dev symfony/maker-bundle
 $ bin/console make:controller ReactController
 
 $ composer require api; # not needed yet
+
+$ composer require --dev symfony/test-pack
+$ bin/phpunit
 ```
 
 ```
+$ bin/console lint:container
 $ symfony serve -d
 $ symfony local:server:stop
 
