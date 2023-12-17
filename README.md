@@ -25,15 +25,6 @@ $ composer require symfony/process
 $ npm install --save-dev typescript ts-loader fork-ts-checker-webpack-plugin; # PhpStorm settings TypeScript: Bundled
 $ npm install --save-dev eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin; # PhpStorm settings ESLint: automatic
 $ npm install react-router-dom
-
-???
-styled-components, bootstrap, sass/less, css module, etc
-prop-types
-demo projects/configs
-react tests, phpstan
-db
-translate
-graphql
 ```
 
 ```
