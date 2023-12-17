@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ parent() }} - Home{% endblock %}
+
+{% block style %}
+    <style>
+        .hello {margin: 1em 0; font: 18px/1.5 sans-serif; display: flex; flex-wrap: wrap; white-space: nowrap;}
+        .hello > h3 {margin: 0 1em;}
+
+        .helloContent {padding: 1em; font-size: 14px;}
+        .helloContent > div {color: red;}
+    </style>
+{% endblock %}
+
+{% block main %}
+    <div class='hello'>
+        <h3>✅ Hello Symfony!</h3>
+        <h3>✅ Hello Stimulus!</h3>
+    </div>
+    <hr/>
+
+    <div class='helloContent' data-controller='hello'>
+        <div data-hello-target='error'></div>
+        <pre data-hello-target='content'></pre>
+    </div>
+{% endblock %}

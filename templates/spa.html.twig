@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ parent() }} - SPA{% endblock %}
+
+{% block style %}
+    <style>
+        .hello {margin: 1em 0; font: 18px/1.5 sans-serif; display: flex; flex-wrap: wrap; white-space: nowrap;}
+        .hello > h3 {margin: 0 1em;}
+    </style>
+{% endblock %}
+
+{% block main %}
+    <div class='hello'>
+        <h3>✅ Hello Symfony!</h3>
+        <h3>✅ Hello React!</h3>
+    </div>
+    <hr/>
+
+    <div {{ react_component('ReactApp', { route: path(routeName) }) }}>
+        Loading...
+    </div>
+{% endblock %}

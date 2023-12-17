@@ -11,6 +11,6 @@ class ApiTest extends ApiTestCase
         $response = static::createClient()->request('GET', '/api/params');
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['fullName' => 'ApiController']);
+        $this->assertJsonContains(['test' => true]);
     }
 }

@@ -7,7 +7,9 @@
          colors="true"
          bootstrap="tests/bootstrap.php"
          convertDeprecationsToExceptions="false"
+         cacheResultFile="var/test/.phpunit.result.cache"
 >
+    <!-- cacheResultFile - phpunit executed as user www-data. It did not work with env.var PHPUNIT_RESULT_CACHE -->
     <php>
         <ini name="display_errors" value="1" />
         <ini name="error_reporting" value="-1" />

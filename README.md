@@ -8,22 +8,32 @@ $ composer require webapp; # symfony new symfony-react --webapp
 
 $ composer require symfony/webpack-encore-bundle; # ux-react
 $ npm install
-
 $ composer require symfony/stimulus-bundle; # ux-react
 $ npm install
-
 $ composer require symfony/ux-react
 $ npm install
-$ npm install -D @babel/preset-react; # ux-react
+$ npm install --save-dev @babel/preset-react; # ux-react
 $ npm run dev; # compile assets
 
 $ #composer require --dev symfony/maker-bundle
 $ bin/console make:controller ReactController
-
 $ composer require api; # not needed yet
-
 $ composer require --dev symfony/test-pack
 $ bin/phpunit
+
+$ composer require symfony/process
+$ npm install --save-dev typescript ts-loader fork-ts-checker-webpack-plugin; # PhpStorm settings TypeScript: Bundled
+$ npm install --save-dev eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin; # PhpStorm settings ESLint: automatic
+$ npm install react-router-dom
+
+???
+styled-components, bootstrap, sass/less, css module, etc
+prop-types
+demo projects/configs
+react tests, phpstan
+db
+translate
+graphql
 ```
 
 ```

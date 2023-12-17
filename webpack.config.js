@@ -73,13 +73,21 @@ Encore
 
     // uncomment if you're having problems with a jQuery plugin
     //.autoProvidejQuery()
-
-    .configureDevServerOptions(options => { // liveReload: symfony.com/doc/6.4/frontend/encore/dev-server.html
-        options.host = '0.0.0.0'; // fix: connection reset with docker
-        //options.liveReload = true; // use command line option '--live-reload'
-        //options.static = {watch: false}; // false: disable php liveReload
-        options.watchFiles = {paths: ['src/**/*.php', 'templates/**/*']};
-    })
 ;
 
-module.exports = Encore.getWebpackConfig();
+Encore // liveReload: symfony.com/doc/6.4/frontend/encore/dev-server.html
+    .configureDevServerOptions(options => {
+        options.host = '0.0.0.0' // fix: connection reset with docker
+        //options.liveReload = true // use command line option '--live-reload'
+        //options.static = {watch: false} // false: disable php liveReload
+        options.watchFiles = {paths: ['src/**/*.php', 'templates/**/*']}
+    })
+
+Encore // npm install --save-dev typescript ts-loader fork-ts-checker-webpack-plugin
+    //.addEntry('main', './assets/main.ts')
+    .enableTypeScriptLoader(function(tsConfig) { // github.com/TypeStrong/ts-loader#options
+        //tsConfig.silent = false
+    })
+    .enableForkedTypeScriptTypesChecking() // faster builds, requires tsconfig.json file - www.npmjs.com/package/fork-ts-checker-webpack-plugin;
+
+module.exports = Encore.getWebpackConfig()

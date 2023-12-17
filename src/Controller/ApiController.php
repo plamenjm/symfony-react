@@ -7,6 +7,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 //use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
+//use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ApiController extends AbstractController
@@ -37,11 +39,47 @@ class ApiController extends AbstractController
         //return $response->setContent(json_encode(['fullName' => 'ApiController']));
 
         return new JsonResponse([
-            'fullName' => 'ApiController',
-            'message' => $utils->happyMessage(),
+            'test' => true, // to-do
+            'happyMessage' => $utils->happyMessage(),
         ]);
 
         // to-do: in tests, empty $response->getContent()
         //return new \Symfony\Component\HttpFoundation\StreamedJsonResponse(['fullName' => 'ApiController']);
+    }
+
+    #[Route('/api/phpunit', name: 'api_phpunit', methods: ['GET'])]
+    public function phpunit(): JsonResponse
+    {
+        $processPhpunit = 'bin/phpunit';
+        $processProjectDir = '..';
+        //$processScript = '/usr/bin/script';
+
+        //$process = new Process(['env'], $processProjectDir); // test
+        //$process->run();
+        //return new Response('<pre>' . $process->getOutput() . '</pre>');
+
+        // phpunit executed as user www-data
+        // $ mkdir var/test; chmod 777 var/cache/test; chmod 666 var/cache/test/annotations.map; su --shell /bin/bash www-data -c bin/phpunit
+        $process = new Process([$processPhpunit], $processProjectDir, [
+            'SYMFONY_DOTENV_VARS' => false, // load 'test' env from .env (current env is 'dev/prod')
+            //'PHPUNIT_RESULT_CACHE' => $_SERVER['PWD'] . '/var/test/.phpunit.result.cache',
+            //'TMPDIR' => $_SERVER['PWD'] . '/var/test',
+        ]);
+
+        // to-do: terminal colors with www.npmjs.com/package/ansi-to-html
+        //$process = new Process([$processScript, '-c', $processPhpunit, 'var/test/phpunit.typescript'], $processProjectDir, [
+        //    'SYMFONY_DOTENV_VARS' => false, // load 'test' env from .env (current env is 'dev/prod')
+        //]);
+
+        $process->run();
+
+        //if (!$process->isSuccessful()) throw new ProcessFailedException($process);
+
+        //return new Response('<pre>' . $process->getOutput() . '</pre>'); // test
+        return new JsonResponse([
+            'process' => $processPhpunit,
+            'processOutput' => $process->getOutput(),
+            'processExitCode' => $process->getExitCode(),
+        ]);
     }
 }

@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "/assets/*": ["assets/*"], // or webpack resolve
+    },
+    "target": "es5",
+    "jsx": "react",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    "allowJs": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "noEmit": true,
+    //"sourceMap": true,
+    //"declaration": true,
+
+    "moduleResolution": "node",
+    //"module": "esnext",
+
+    "strict": true,
+    //"alwaysStrict": true,
+    //"noImplicitAny": true,
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "bin",
+    "node_modules",
+    "public/build",
+    "var",
+    "vendor"
+  ]
+}

@@ -1,25 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
+import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
+import { NavMenu } from '/assets/react/components/NavMenu';
+import { PageParams } from '/assets/react/PageParams';
+import { PagePhpunit } from '/assets/react/PagePhpunit';
 
-export default function ({fullName}) {
-    const [stateResponse, setResponse] = useState({fullName})
+function AppMenu() {
+    return <>
+        <header>
+            <nav>
+                <NavMenu to='' end replace>API</NavMenu>
+                &nbsp;|&nbsp;
+                <NavMenu to='phpunit' replace>phpunit</NavMenu>
+            </nav>
+        </header>
+        <hr/>
+        <Outlet/>
+    </>
+}
 
-    useEffect(() => {
-        const baseUrl = window.location.origin + '/api/'
-        const resource = baseUrl + 'params'
-        const request = {
-            method: 'GET',
-            headers: {Accept: 'application/json'},
-            //body: JSON.stringify({}),
-            mode: 'no-cors',
-            credentials: 'omit',
-            cache: 'no-store',
-        }
-        fetch(resource, request)
-          .then(response => response.json().then(json =>
-            setResponse({fullName: JSON.stringify(json)}))
-          )
-          .catch(error => setResponse({fullName: error.message}))
-    }, [])
+export default function ReactApp({route, happyMessage}) {
+    const router = useMemo(() => createBrowserRouter([
+        {path: route, element: <AppMenu/>, children: [
+                {path: '', element: <PageParams/>,},
+                {path: '*', element: <PageParams/>,},
+                {path: 'phpunit', element: <PagePhpunit/>,},
+            ]},
+    ]), [])
 
-    return <div>Hello {stateResponse.fullName}</div>;
+    return <React.StrictMode>
+        <RouterProvider router={router} />
+    </React.StrictMode>
 }

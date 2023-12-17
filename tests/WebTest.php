@@ -6,15 +6,24 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class WebTest extends WebTestCase
 {
+    public function testIndex(): void
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/index');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('div > h3', 'Hello Symfony!');
+        $this->assertSelectorTextContains('div > h3 + h3', 'Hello Stimulus!');
+    }
+
     public function testSpa(): void
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/spa');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('div > h1', 'Hello WebController.spa!');
-        $this->assertSelectorTextContains('div ~ div > h1', 'Hello react_component!');
-        $this->assertSelectorTextContains('div ~ div ~ div > h1', 'Hello data-controller!');
+        $this->assertSelectorTextContains('div > h3', 'Hello Symfony!');
+        $this->assertSelectorTextContains('div > h3 + h3', 'Hello React!');
     }
 
     public function testApiParams(): void
@@ -29,6 +38,6 @@ class WebTest extends WebTestCase
         $response = $client->getResponse();
         $content = $response->getContent();
         $data = json_decode($content);
-        $this->assertObjectHasProperty('fullName', $data);
+        $this->assertObjectHasProperty('happyMessage', $data);
     }
 }
