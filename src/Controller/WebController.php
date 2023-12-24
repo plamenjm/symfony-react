@@ -10,13 +10,19 @@ use Symfony\Component\Routing\Annotation\Route;
 class WebController extends AbstractController
 {
     //#[Route('/', name: 'homepage')] // to-do
-    #[Route('/index', name: 'app_index')]
+    #[Route('/index', name: '/index')]
     public function index(): Response
     {
         return $this->render('index.html.twig');
     }
 
-    #[Route('/spa/{page}', name: 'app_spa', defaults: ['page' => ''])]
+    #[Route('/db', name: '/db')]
+    public function db(): Response
+    {
+        return $this->render('db.html.twig');
+    }
+
+    #[Route('/spa/{page}', name: '/spa', defaults: ['page' => ''])]
     public function spa(Request $request): Response
     {
         return $this->render('spa.html.twig', [

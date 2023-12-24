@@ -22,12 +22,16 @@
                 {% set _route = app.request.get('_route') %}
                 <a href="/">Default</a>
                 &nbsp;|&nbsp;
-                {% if _route == 'homepage' or _route == 'app_index' %}<b>Home</b>
-                {% else %}<a href="{{ path('app_index') }}">Home</a>
+                {% if _route == 'homepage' or _route == '/index' %}<b>Home</b>
+                {% else %}<a href="{{ path('/index') }}">Home</a>
                 {% endif %}
                 &nbsp;|&nbsp;
-                {% if _route == 'app_spa' %}<b>SPA</b>
-                {% else %}<a href="{{ path('app_spa') }}">SPA</a>
+                {% if _route == '/db' %}<b>DB</b>
+                {% else %}<a href="{{ path('/db') }}">DB</a>
+                {% endif %}
+                &nbsp;|&nbsp;
+                {% if _route == '/spa' %}<b>SPA</b>
+                {% else %}<a href="{{ path('/spa') }}">SPA</a>
                 {% endif %}
             </div>
         </nav>

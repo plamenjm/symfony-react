@@ -25,6 +25,13 @@ $ composer require symfony/process
 $ npm install --save-dev typescript ts-loader fork-ts-checker-webpack-plugin; # PhpStorm settings TypeScript: Bundled
 $ npm install --save-dev eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin; # PhpStorm settings ESLint: automatic
 $ npm install react-router-dom
+
+$ composer require symfony/orm-pack
+$ bin/console doctrine:database:create
+$ bin/console make:entity ...
+$ bin/console doctrine:migrations:diff; # bin/console make:migration
+$ bin/console doctrine:migrations:migrate
+$ bin/console dbal:run-sql 'SELECT * FROM ...'
 ```
 
 ```

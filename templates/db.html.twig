@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ parent() }} - Home{% endblock %}
+
+{% block style %}
+    <style>
+        .hello {margin: 1em 0; font: 18px/1.5 sans-serif; display: flex; flex-wrap: wrap; white-space: nowrap;}
+        .hello > h3 {margin: 0 1em;}
+
+        .helloContent {padding: 1em; font: 18px/1.5 sans-serif; display: flex; flex-direction: column;}
+    </style>
+{% endblock %}
+
+{% block main %}
+    <div class='hello'>
+        <h3>✅ Hello Symfony!</h3>
+        <h3>✅ Hello DB!</h3>
+    </div>
+    <hr/>
+
+    <div class='helloContent' style=''>
+        <a href='/api'>API Platform</a>
+        &nbsp;
+        <div>Custom APIs:</div>
+        &nbsp;
+        <div><a href='{{ path('/api/product', {id: 1}) }}'>{{ path('/api/product', {id: 1}) }}</a> (custom Serializer)</div>
+        <div><a href='{{ path('/api/product-id', {id: 1}) }}'>{{ path('/api/product-id', {id: 1}) }}</a> (API Platform default Serializer)</div>
+        &nbsp;
+        <div><a href='{{ path('/api/product/name-dql', {name: 'key'}) }}'>{{ path('/api/product/name-dql', {name: 'key'}) }}</a> (DQL)</div>
+        <div><a href='{{ path('/api/product/price-qb', {price: 1999}) }}'>{{ path('/api/product/price-qb', {price: 1999}) }}</a> (QB)</div>
+        <div><a href='{{ path('/api/product/description-sql', {description: 'and'}) }}'>{{ path('/api/product/description-sql', {description: 'and'}) }}</a> (SQL)</div>
+        <div><a href='{{ path('/api/product/description-native', {description: 'and'}) }}'>{{ path('/api/product/description-native', {description: 'and'}) }}</a> (Native Query)</div>
+        &nbsp;
+        <div><a href='{{ path('/api/product/new') }}'>{{ path('/api/product/new') }}</a> (Validator)</div>
+    </div>
+{% endblock %}
