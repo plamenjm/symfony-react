@@ -32,7 +32,8 @@ class ProductRepository extends ServiceEntityRepository
             . ' INNER JOIN p.category c'
             . ' WHERE p.name like :name'
             . ' ORDER BY p.id ASC')
-            //->setMaxResults(10)
+            //->setMaxResults(10)->setFirstResult(0)
+            //->setFetchMode('App\Entity\Product', 'category', \Doctrine\ORM\Mapping\ClassMetadataInfo::FETCH_EAGER)
             ->setParameter('name', '%' . $name . '%')
             ->getArrayResult();
     }
@@ -47,9 +48,8 @@ class ProductRepository extends ServiceEntityRepository
             ->innerJoin('p.category', 'c')
             ->where('p.price = :price')
             ->orderBy('p.id', 'ASC')
-            //->setMaxResults(10)
-            ->getQuery()
-            ->setParameter('price', $price)
+            //->setMaxResults(10)->setFirstResult(0)
+            ->setParameter('price', $price)->getQuery()
             ->getArrayResult();
     }
 
