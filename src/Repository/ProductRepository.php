@@ -25,45 +25,46 @@ class ProductRepository extends ServiceEntityRepository
     /**
      * @return Product[] Returns an array of Product objects
      */
-    public function findByNameDQL(string $name): array
+    public function findByNameDQL(?string $name): array
     {
-        return $this->getEntityManager()->createQuery(
+        $query = $this->getEntityManager()->createQuery(
             'SELECT p, c FROM App\Entity\Product p'
             . ' INNER JOIN p.category c'
-            . ' WHERE p.name like :name'
-            . ' ORDER BY p.id ASC')
-            //->setMaxResults(10)->setFirstResult(0)
-            //->setFetchMode('App\Entity\Product', 'category', \Doctrine\ORM\Mapping\ClassMetadataInfo::FETCH_EAGER)
-            ->setParameter('name', '%' . $name . '%')
-            ->getArrayResult();
+            . (!$name ? '' : ' WHERE p.name like :name')
+            . ' ORDER BY p.id ASC');
+        //$query->setMaxResults(10)->setFirstResult(0);
+        //$query->setFetchMode('App\Entity\Product', 'category', \Doctrine\ORM\Mapping\ClassMetadataInfo::FETCH_EAGER);
+        if ($name) $query->setParameter('name', '%' . $name . '%');
+        return $query->getArrayResult();
     }
 
     /**
      * @return Product[] Returns an array of Product objects
      */
-    public function findByPriceQB(int $price): array
+    public function findByPriceQB(?int $price): array
     {
-        return $this->createQueryBuilder('p')
+        $query = $this->createQueryBuilder('p')
             ->select(['p', 'c'])
             ->innerJoin('p.category', 'c')
-            ->where('p.price = :price')
-            ->orderBy('p.id', 'ASC')
-            //->setMaxResults(10)->setFirstResult(0)
-            ->setParameter('price', $price)->getQuery()
-            ->getArrayResult();
+            ->orderBy('p.id', 'ASC');
+        //$query->setMaxResults(10)->setFirstResult(0);
+        if ($price) $query->where('p.price = :price')
+            ->setParameter('price', $price);
+        return $query->getQuery()->getArrayResult();
     }
 
-    public function findByDescriptionSQL(string $description): array
+    public function findByDescriptionSQL(?string $description): array
     {
-        /** @noinspection SqlDialectInspection SqlNoDataSourceInspection */
-        $res = $this->getEntityManager()->getConnection()->executeQuery(
-            'SELECT * FROM product p WHERE p.description like :description ORDER BY p.price ASC',
-            ['description' => '%' . $description . '%'])
+        /** @noinspection PhpUnhandledExceptionInspection SqlDialectInspection SqlNoDataSourceInspection */
+        return $this->getEntityManager()->getConnection()->executeQuery(
+            'SELECT * FROM product p'
+            . (!$description ? '' : ' WHERE p.description like :description')
+            . ' ORDER BY p.price ASC',
+            (!$description ? [] : ['description' => '%' . $description . '%']))
             ->fetchAllAssociative();
-        return $res;
     }
 
-    public function findByDescriptionNative(string $description): array
+    public function findByDescriptionNative(?string $description): array
     {
         $rsm = new ResultSetMapping();
         $rsm->addEntityResult(Product::class, 'p');
@@ -73,10 +74,12 @@ class ProductRepository extends ServiceEntityRepository
         $rsm->addMetaResult('p', 'price', 'price');
         $rsm->addMetaResult('p', 'description', 'description');
         /** @noinspection SqlDialectInspection SqlNoDataSourceInspection */
-        return $this->getEntityManager()->createNativeQuery(
-            'SELECT * FROM product p WHERE p.description like ? ORDER BY p.price ASC',
-            $rsm)
-            ->setParameter(1, '%' . $description . '%')
-            ->getArrayResult();
+        $query = $this->getEntityManager()->createNativeQuery(
+            'SELECT * FROM product p'
+            . (!$description ? '' : ' WHERE p.description like ?')
+            . ' ORDER BY p.price ASC',
+            $rsm);
+        if ($description) $query->setParameter(1, '%' . $description . '%');
+        return $query->getArrayResult();
     }
 }

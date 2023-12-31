@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
+import { Config } from '/assets/Utils';
 import { NavMenu } from '/assets/react/components/NavMenu';
 import { PageParams } from '/assets/react/PageParams';
 import { PagePhpunit } from '/assets/react/PagePhpunit';
@@ -18,9 +19,13 @@ function AppMenu() {
     </>
 }
 
-export default function ReactApp({route, happyMessage}) {
+export default function ReactApp({path, urlApi}) {
+    if (!Config.FetchApi.startsWith('http')) Config.FetchApi = urlApi
+      ? urlApi + '/'
+      : window.location.origin + Config.FetchApi
+
     const router = useMemo(() => createBrowserRouter([
-        {path: route, element: <AppMenu/>, children: [
+        {path, element: <AppMenu/>, children: [
                 {path: '', element: <PageParams/>,},
                 {path: '*', element: <PageParams/>,},
                 {path: 'phpunit', element: <PagePhpunit/>,},

@@ -8,7 +8,8 @@
         .hello > h3 {margin: 0 1em;}
 
         .helloContent {padding: 1em; font-size: 14px;}
-        .helloContent > div {color: red;}
+        .helloContent > div:first-child {color: red;}
+        .helloContent > div + div {display: flex; gap: 2em;}
     </style>
 {% endblock %}
 
@@ -21,6 +22,9 @@
 
     <div class='helloContent' data-controller='hello'>
         <div data-hello-target='error'></div>
-        <pre data-hello-target='content'></pre>
+        <div>
+            <pre data-hello-target='composer'></pre>
+            <pre data-hello-target='package'></pre>
+        </div>
     </div>
 {% endblock %}

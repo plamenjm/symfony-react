@@ -1,6 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
+import composerJson from '/composer.json';
 import packageJson from '/package.json';
- 
+
 /*
  * This is an example Stimulus controller!
  *
@@ -11,15 +12,36 @@ import packageJson from '/package.json';
  * Delete this file or adapt it for your use!
  */
 export default class extends Controller {
-    static targets = [ 'error', 'content' ]
+    static targets = ['error', 'composer', 'package']
 
     connect() {
         try {
-            const dep = packageJson.dependencies, dev = packageJson.devDependencies
-            this.contentTarget.textContent =
-              "dependencies:\n" + Object.keys(dep).map(key => key + ' => ' + dep[key]).join("\n")
-              + "\n\n" +
-              "devDependencies:\n" + Object.keys(dev).map(key => key + ' => ' + dev[key]).join("\n")
+            const composerDep = composerJson['require'], composerDev = composerJson['require-dev']
+            const packageDep = packageJson['dependencies'], packageDev = packageJson['devDependencies']
+
+            const composerDepFilter = key => ['api-platform', 'doctrine', 'process', 'stimulus', 'react', 'validator']
+              .find(val => key.indexOf(val) >= 0)
+            const composerDevFilter = key => ['phpunit']
+              .find(val => key.indexOf(val) >= 0)
+            const packageDepFilter = key => ![]
+              .find(val => key.indexOf(val) >= 0)
+            const packageDevFilter = key => !['babel', 'webpack', 'regenerator']
+              .find(val => key.indexOf(val) >= 0)
+
+            this.composerTarget.innerHTML =
+              '<b>composer.require:</b><br/>' + Object.keys(composerDep).filter(composerDepFilter)
+                .map(key => key + ' => ' + composerDep[key]).join('<br/>')
+              + '<br/><br/>' +
+              '<b>composer.require-dev:</b><br/>' + Object.keys(composerDev).filter(composerDevFilter)
+                .map(key => key + ' => ' + composerDev[key]).join('<br/>')
+
+            this.packageTarget.innerHTML =
+              '<b>package.dependencies:</b><br/>' + Object.keys(packageDep).filter(packageDepFilter)
+                .map(key => key + ' => ' + packageDep[key]).join('<br/>')
+              + '<br/><br/>' +
+              '<b>package.devDependencies:</b><br/>' + Object.keys(packageDev).filter(packageDevFilter)
+                .map(key => key + ' => ' + packageDev[key]).join('<br/>')
+
         } catch (ex) { // to-do: stimulus handle error
             this.errorTarget.textContent = ex.message
         }

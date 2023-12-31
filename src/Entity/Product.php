@@ -34,7 +34,7 @@ class Product
     private ?string $name = null;
 
     #[ORM\Column]
-    private ?int $price = null;
+    private ?int $price = null; // cents
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;

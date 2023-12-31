@@ -16,7 +16,7 @@
     </div>
     <hr/>
 
-    <div {{ react_component('ReactApp', { route: path(routeName) }) }}>
+    <div {{ react_component('ReactApp', { path: path(route), urlApi }) }}>
         Loading...
     </div>
 {% endblock %}

@@ -2,6 +2,8 @@
 
 Playground (Symfony, SQLite, ReactJS)
 
+![image](https://github.com/plamenjm/symfony-react/assets/56994434/62e8530d-bc4a-4b7b-b10e-57dca5b887d7)
+
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/61e046e9-557a-40a5-8426-9a6322100cfd)
 
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/b5f25e40-dd6f-45ca-bbc4-9b2c8c766c72)
@@ -41,31 +43,10 @@ $ bin/console doctrine:migrations:diff; # bin/console make:migration
 $ bin/console doctrine:migrations:migrate
 $ bin/console dbal:run-sql 'SELECT * FROM ...'
 
-???
-todo $ npm install @tanstack/react-query
-todo $ npm install react-redux
-todo $ npm install mobx
-(todo $ npm install react-tracked)
-
-???
-todo $ npm install styled-components
-bootstrap - symfony.com/doc/current/frontend/encore/bootstrap.html
-todo $ npm install --save-dev bootstrap
-todo $ npm install react-bootstrap
-sass - symfony.com/doc/current/frontend/encore/css-preprocessors.html 
-(css module? - devcastoro.medium.com/how-to-enable-react-css-modules-on-symfony-and-webpack-823bbb67c1fe)
-
-???
-react - suspense, transition, etc
-symfony user authentication
-symfony form
-symfony request validate 
-demo projects/configs
-react tests
-phpstan
-translate
-graphql
-prop-types
+todo: symfony web security
+todo: symfony db users, authentication
+todo: react state (redux, mobx)
+todo: bootstrap, sass, styled-components
 ```
 
 ```

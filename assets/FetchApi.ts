@@ -1,3 +1,4 @@
+import { Config } from '/assets/Utils';
 
 type ModelApiParams = {test: string, happyMessage: string}
 type ModelApiPhpunit = {process: string, processOutput: string, processExitCode: string}
@@ -18,7 +19,6 @@ export function fetchApi(resource: 'phpunit'): Promise<FetchApiPhpunit>
 
 export function fetchApi(resource: FetchResource): Promise<FetchApi>
 export function fetchApi<FetchSome extends FetchApi>(resource: FetchResource): Promise<FetchSome> {
-  const baseUrl = window.location.origin + '/api/'
   const request: RequestInit = {
     method: 'GET',
     headers: {Accept: 'application/json'},
@@ -27,7 +27,7 @@ export function fetchApi<FetchSome extends FetchApi>(resource: FetchResource): P
     credentials: 'omit',
     cache: 'no-store',
   }
-  return fetch(baseUrl + resource, request)
+  return fetch(Config.FetchApi + resource, request)
       .then(response => {
         return response.json()
             .then(json => {
