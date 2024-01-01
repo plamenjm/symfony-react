@@ -1,0 +1,41 @@
+
+###
+# @no-cookie-jar
+GET {{server}}/index
+
+
+###
+# @no-cookie-jar
+GET {{server}}/db
+
+
+###
+# @no-cookie-jar
+GET {{server}}/spa
+
+
+###
+###
+# @no-cookie-jar
+GET {{server}}{{api}}/params
+
+
+###
+# @no-cookie-jar
+GET {{server}}{{api}}/phpunit
+
+
+###
+###
+# @no-cookie-jar
+GET {{server}}{{api}}/product
+
+
+###
+# @no-cookie-jar
+GET {{server}}{{api}}/product/1
+
+
+###
+# @no-cookie-jar
+GET {{server}}{{api}}/product/seed

@@ -78,8 +78,10 @@ Encore
 Encore // liveReload: symfony.com/doc/6.4/frontend/encore/dev-server.html
     .configureDevServerOptions(options => {
         options.host = '0.0.0.0' // fix: connection reset with docker
-        //options.liveReload = true // use command line option '--live-reload'
-        //options.static = {watch: false} // false: disable php liveReload
+        options.liveReload = !!(process.env.liveReload && !['0', 'false'].includes(process.env.liveReload)) // default false
+        // options.liveReload or use command line option: $ npm run dev-server -- --live-reload
+        options.static = {watch: !!(!process.env.staticWatch || !['0', 'false'].includes(process.env.staticWatch))} // default true
+        // options.static.watch false: disable php/twig liveReload
         options.watchFiles = {paths: ['src/**/*.php', 'templates/**/*']}
     })
 

@@ -3,17 +3,20 @@ import { Config } from '/assets/Utils';
 type ModelApiParams = {test: string, happyMessage: string}
 type ModelApiPhpunit = {process: string, processOutput: string, processExitCode: string}
 
+
 //---
 
 type FetchApi = {error?: string, json?: object}
 export interface FetchApiParams extends FetchApi {error?: string, json?: ModelApiParams}
 export interface FetchApiPhpunit extends FetchApi {error?: string, json?: ModelApiPhpunit}
 
+
 //---
 
 type FetchResource = 'params' | 'phpunit'
 export function fetchApi(resource: 'params'): Promise<FetchApiParams>
 export function fetchApi(resource: 'phpunit'): Promise<FetchApiPhpunit>
+
 
 //---
 

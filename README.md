@@ -49,11 +49,21 @@ todo: react state (redux, mobx)
 todo: bootstrap, sass, styled-components
 ```
 
+---
+
+cmd.sh
+
+```
+Helper script for symfony and podman (docker) container.
+
+Usage: cmd.sh <serve | serve-debug | stop | log-php | dump>
+       cmd.sh <watch | dev-server | dev-live-php | dev-live>
+       cmd.sh <phpunit | lint | bash | bash $* >
+       cmd.sh <browser | log-dev>
+```
+
+---
+
 ```
 $ bin/console lint:container
-$ symfony serve -d
-$ symfony local:server:stop
-
-$ npm run watch; # watch and compile assets 
-$ npm run dev-server --live-reload; # development server
 ```
