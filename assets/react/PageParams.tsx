@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Const } from '/assets/Utils';
+import { Constants } from '/assets/Utils';
 import { fetchApi, FetchApiParams } from '/assets/FetchApi';
 import '/assets/react/Page.css';
 
@@ -13,7 +13,7 @@ export function PageParams() {
         setFetch({loading: true})
         fetchApi(resource).then(({error, json}) =>
             setFetch({loading: false, json,
-                error: error ?? (json?.happyMessage ? undefined : Const.ErrorUnexpected)})
+                error: error ?? (json?.testHappyMessage ? undefined : Constants.ErrorUnexpected)})
         )
     }, [])
 

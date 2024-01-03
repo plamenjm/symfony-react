@@ -5,12 +5,9 @@ namespace App\Controller;
 use App\Entity\Product;
 use App\Repository\ProductCategoryRepository;
 use App\Repository\ProductRepository;
-use App\Service\Utils;
+use App\Service\ApiService;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-//use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 //use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,48 +17,89 @@ use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route(\App\Constant::APP_PATH_API, name: \App\Constant::APP_ROUTE_API, options: ['utf8' => true])] //#[Route('%app_path_api%', name: \App\Constant::APP_ROUTE_API)]
-class ApiController extends AbstractController
+#[Route(\App\Constants::APP_PATH_API, name: \App\Constants::APP_ROUTE_API, options: ['utf8' => true])] //#[Route('%app_path_api%'...
+class ApiController extends BaseController //implements \Symfony\Contracts\Service\ServiceSubscriberInterface
 {
     private const ROUTE_PRODUCT = '/product';
 
-    // to-do: error - Service "logger" not found: even though it exists in the app's container, the container inside "App\Controller\ApiController" is a smaller service locator that only knows about the "form.factory", "http_kernel", "parameter_bag", "request_stack", "router", "security.authorization_checker", "security.csrf.token_manager", "security.token_storage", "serializer", "twig" and "web_link.http_header_serializer" services. Try using dependency injection instead.
-    //#[SubscribedService]
-    //private function logger(): LoggerInterface
-    //{
-    //    return $this->container->get('logger');
-    //}
-    
-    #[Route('/params', name: '/params', methods: ['GET'])]
-    public function params(
-        //#[Autowire(lazy: true)] // to-do: error - Argument #1 ($logger) must be of type Psr\Log\LoggerInterface, null given
-        LoggerInterface $logger,
-        Utils $utils,
-    ): JsonResponse
-    {
-        // debug log and dump
-        //$logger->debug('params', ['ApiController']); //? $this->logger()->debug('params', ['ApiController']);
-        //dump(['dump']); //? var_dump(['var_dump']);
-        //file_put_contents('php://stderr', print_r(['php://stderr'], TRUE)); //? fwrite(STDERR, print_r(['STDERR'], TRUE))
-        //dd(['dd']); //throw new \RuntimeException(print_r(['RuntimeException'], true));
-
-
-        //$response = new \Symfony\Component\HttpFoundation\Response();
-        //$response->headers->set('Content-Type', 'application/json');
-        //return $response->setContent(json_encode(['fullName' => 'ApiController']));
-
-        sleep(2); // test
-        return $this->json([
-            'test' => true, // to-do
-            'time' => date('Y-m-d H:i:s'),
-            'happyMessage' => $utils->happyMessage(),
-        ]);
-
-        // to-do: in tests, empty $response->getContent()
-        //return new \Symfony\Component\HttpFoundation\StreamedJsonResponse(['fullName' => 'ApiController']);
-    }
 
     //---
+
+    public static function getSubscribedServices(): array
+    {
+        return array_merge(parent::getSubscribedServices(), [
+            //\Psr\Log\LoggerInterface::class, // optional: '?' . ...
+        ]);
+    }
+
+
+    //---
+
+    /** @noinspection PhpInapplicableAttributeTargetDeclarationInspection */
+    public function __construct(
+        #[\Symfony\Component\DependencyInjection\Attribute\AutowireServiceClosure(\Psr\Log\LoggerInterface::class)]
+        private readonly \Closure $logger,
+
+        //#[\Symfony\Component\DependencyInjection\Attribute\AutowireLocator([\Psr\Log\LoggerInterface::class])] //? not subscribed, not working
+        //private readonly \Psr\Container\ContainerInterface $subscribed,
+
+        //\Twig\Environment $twig,
+    )
+    {
+        parent::__construct(); //$twig
+    }
+
+    private function getLogger(): \Psr\Log\LoggerInterface
+    {
+        return ($this->logger)(); // lazy by closure (getter)
+    }
+
+    //private function locateLogger(): \Psr\Log\LoggerInterface
+    //{
+    //    //if (!$this->subscribed->has(\Psr\Log\LoggerInterface::class)) ... // optional
+    //    /** @noinspection PhpUnhandledExceptionInspection */
+    //    return $this->subscribed->get(\Psr\Log\LoggerInterface::class); // lazy by subscribe (locator)
+    //}
+
+
+    //---
+
+    #[Route('/params', name: '/params', methods: ['GET'])]
+    public function params(
+        ApiService $apiService,
+        //#[\Symfony\Component\DependencyInjection\Attribute\Autowire(env: 'APP_ENV')]
+        //string $APP_ENV,
+
+        //#[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: \Psr\Log\LoggerInterface::class, lazy: true)]
+        //\Psr\Log\LoggerInterface $logger, // lazy by proxy
+
+    ): JsonResponse
+    {
+        if ($_SERVER['APP_ENV'] !== 'test') { // testDump
+            //\App\TestDump::dd(['params']);
+            //\App\TestDump::exception(['params']);
+            //\App\TestDump::varDump(['params']);
+            //\App\TestDump::stdErr(['params']);
+            //\App\TestDump::dump(['params']);
+            \App\TestDump::logger(['params'], $this->getLogger()); //$this->locateLogger() //$logger
+        }
+
+
+        $res = [
+            'test' => true, // to-do
+            'time' => date('Y-m-d H:i:s'),
+            'testHappyMessage' => $apiService->testHappyMessage(),
+        ];
+
+        //return new JsonResponse($res, Response::HTTP_OK, [
+        //return JsonResponse::fromJsonString(json_encode($res), Response::HTTP_OK, [
+        return $this->json($res, Response::HTTP_OK, [
+            'Symfony-Debug-Toolbar-Replace' => '1', // testDump
+        ]);
+
+        // to-do: $response->getContent() is empty in tests
+        //return new \Symfony\Component\HttpFoundation\StreamedJsonResponse($res);
+    }
 
     #[Route('/phpunit', name: '/phpunit', methods: ['GET'])]
     public function phpunit(): JsonResponse
@@ -90,25 +128,24 @@ class ApiController extends AbstractController
         $process->run();
         //if (!$process->isSuccessful()) throw new ProcessFailedException($process);
 
-        sleep(2); // test
+        sleep(2); // test loading
         return $this->json([
             'process' => $processPhpunit,
-            'processOutput' => $process->getOutput(),
+            'processStdOut' => $process->getOutput(),
+            'processStdErr' => $process->getErrorOutput(),
             'processExitCode' => $process->getExitCode(),
         ]);
     }
 
-    //---
 
-    // /product
-
-    private array $productIdSerializerContext = [
-        //\Symfony\Component\Serializer\Normalizer\AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => fn($obj) => null,
-        \Symfony\Component\Serializer\Normalizer\AbstractNormalizer::IGNORED_ATTRIBUTES => ['products'],
-    ];
+    //--- /product
 
     #[Route('/product/{id?0}', name: self::ROUTE_PRODUCT, requirements: ['id' => Requirement::POSITIVE_INT])]
-    public function product(#[MapEntity(disabled: true)] ?Product $product, EntityManagerInterface $entity, int $id = 0): JsonResponse
+    public function product(
+        #[MapEntity(disabled: true)] ?Product $product,
+        EntityManagerInterface $entity,
+        int $id = 0,
+    ): JsonResponse
     {
         $entity = $GLOBALS['app']->getContainer()->get('doctrine')->getManager();
         $repository = $entity->getRepository(Product::class);
@@ -116,30 +153,45 @@ class ApiController extends AbstractController
             $response = $repository->findAll();
         else {
             $response = $repository->find($id);
-            if (!$response) throw $this->createNotFoundException('Not found.');
-            //return $this->json(['name' => $response->getName()]);
+            if (!$response) throw $this->exceptionObjNotFound(Product::class);
         }
-        return $this->json($response, Response::HTTP_OK, [], $this->productIdSerializerContext);
+        return $this->json($response);
     }
 
     #[Route('/product-id/{id?0}', name: '/product-id', requirements: ['id' => Requirement::POSITIVE_INT])]
-    public function productId(#[MapEntity] ?Product $product, EntityManagerInterface $entity, SerializerInterface $serializer): JsonResponse
+    public function productId(
+        #[MapEntity] ?Product $product,
+        EntityManagerInterface $entity,
+        SerializerInterface $serializer,
+        ?int $id,
+    ): JsonResponse
     {
-        if ($product) {
-            $response = $product;
-            //return $this->json(['name' => $product->getName()]);
-        } else {
+        if (!$id) {
             $repository = $entity->getRepository(Product::class);
             $response = $repository->findAll();
-        }
+        } else if (!$product)
+            throw $this->exceptionObjNotFound(Product::class);
+        else
+            $response = $product;
 
-        //return $this->json($response, Response::HTTP_OK, [], $this->productIdSerializerContext);
+        //return $this->json($response, Response::HTTP_OK, [], $productIdSerializerContext);
 
         $serializer = new \Symfony\Component\Serializer\Serializer(
-            [new \Symfony\Component\Serializer\Normalizer\ObjectNormalizer()],
-            [new \Symfony\Component\Serializer\Encoder\JsonEncoder()]);
-        //return $this->json($serializer->normalize($response, null, $this->productIdSerializerContext));
-        return JsonResponse::fromJsonString($serializer->serialize($response, 'json', $this->productIdSerializerContext));
+            [new \Symfony\Component\Serializer\Normalizer\ObjectNormalizer(defaultContext: [
+                \Symfony\Component\Serializer\Normalizer\AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => fn($obj) => null,
+            ])], [new \Symfony\Component\Serializer\Encoder\JsonEncoder()]);
+        //return $this->json($serializer->normalize($response, null, $productIdSerializerContext));
+        return JsonResponse::fromJsonString($serializer->serialize($response, 'json', [
+            \Symfony\Component\Serializer\Normalizer\AbstractNormalizer::IGNORED_ATTRIBUTES => ['products'],
+        ]));
+    }
+
+    #[Route('/product-name/{name}', name: '/product-name')]
+    public function productName(
+        #[MapEntity] Product $product,
+    ): JsonResponse
+    {
+        return $this->json($product);
     }
 
     #[Route('/product/name-dql/{param?}', name: '/product/name-dql')]
@@ -167,7 +219,7 @@ class ApiController extends AbstractController
     public function productDescriptionNative(ProductRepository $repository, ?string $param): JsonResponse
     {
         $products = $repository->findByDescriptionNative($param);
-        return $this->json($products); //new JsonResponse($products)
+        return $this->json($products);
     }
 
     #[Route('/product/seed', name: '/product/seed', priority: 2)]
@@ -189,8 +241,6 @@ class ApiController extends AbstractController
 
         $entity->persist($product);
         $entity->flush();
-        return $this->redirectToRoute(\App\Constant::APP_ROUTE_API . self::ROUTE_PRODUCT, ['id' => $product->getId()]);
+        return $this->redirectToRoute(\App\Constants::APP_ROUTE_API . self::ROUTE_PRODUCT, ['id' => $product->getId()]);
     }
-
-    //---
 }

@@ -3,11 +3,13 @@ export const Config = {
     FetchApi: '/api/',
 }
 
+
 //---
 
-export const Const = {
+export const Constants = {
     ErrorUnexpected: 'Unexpected error.'
 }
+
 
 //---
 

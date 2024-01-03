@@ -2,10 +2,8 @@
 
 namespace App\Tests;
 
-//use Psr\Log\LoggerInterface;
-use App\Service\Utils;
+use App\Service\ApiService;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-//use Symfony\Component\Routing\RouterInterface;
 
 class KernelTest extends KernelTestCase
 {
@@ -15,16 +13,14 @@ class KernelTest extends KernelTestCase
 
 
         // debug log and dump
-        //? $logger = (fn($v): LoggerInterface => $v)(static::getContainer()->get('logger'));
+        //? $logger = (fn($v): \Psr\Log\LoggerInterface => $v)(static::getContainer()->get('logger'));
         //? $logger->debug('test', ['KernelTest']);
 
 
         $this->assertSame('test', $kernel->getEnvironment());
 
-        ///** @var Utils $utils */ $utils = static::getContainer()->get('utils');
-        //$this->assertNotEmpty($utils->happyMessage());
-
-        /** @var Utils $utils */ $utils = static::getContainer()->get(Utils::class);
-        $this->assertNotEmpty($utils->happyMessage());
+        /** @var ApiService $apiService */
+        $apiService = static::getContainer()->get(ApiService::class);
+        $this->assertNotEmpty($apiService->testHappyMessage());
     }
 }

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { Const } from '/assets/Utils';
+import { Constants } from '/assets/Utils';
 import { fetchApi, FetchApiPhpunit } from '/assets/FetchApi';
 import '/assets/react/Page.css';
 
@@ -13,12 +13,14 @@ export function PagePhpunit() {
         setFetch({loading: true})
         fetchApi(resource).then(({error, json}) =>
             setFetch({loading: false, json,
-                error: error ?? (json?.processOutput ? undefined : Const.ErrorUnexpected)})
+                error: error ?? (json?.processStdOut ? undefined : Constants.ErrorUnexpected)})
         )
     }, [])
 
     const processError = stateFetch.json && stateFetch.json.processExitCode
-    const processOutput = !stateFetch.json ? undefined : '$ ' + stateFetch.json.process + "\n" + stateFetch.json.processOutput
+    const processStdOut = !stateFetch.json ? undefined : '$ ' + stateFetch.json.process + '\n'
+        + (!stateFetch.json.processStdErr ? '' : '\nSTDERR:\n' + stateFetch.json.processStdErr + '\nSTDOUT:\n')
+        + stateFetch.json.processStdOut
 
     return (
         <div className='pageContent'>
@@ -26,7 +28,7 @@ export function PagePhpunit() {
             <pre className={processError ? 'error' : undefined}>
                 {stateFetch.loading ? 'loading...'
                     : stateFetch.error ? <div className='pageError'>{stateFetch.error}</div>
-                        : processOutput}
+                        : processStdOut}
             </pre>
         </div>
     )

@@ -58,11 +58,13 @@ Helper script for symfony and podman (docker) container.
 
 Usage: cmd.sh <serve | serve-debug | stop | log-php | dump>
        cmd.sh <watch | dev-server | dev-live-php | dev-live>
-       cmd.sh <phpunit | lint | bash | bash $* >
-       cmd.sh <browser | log-dev>
+       cmd.sh <phpunit $* | phpunit-dump $* | lint>
+       cmd.sh <log-dev | browser | bash $* >
 ```
 
 ---
+
+prod hints
 
 ```
 $ bin/console lint:container

@@ -5,7 +5,7 @@ wrapper=../cmd.sh
 repo=$(dirname -- "$(readlink -f -- "$0")")
 project=/host/${repo##*/}
 
-cmd="$1"
+cmd="$1"; shift
 
 
 
@@ -23,7 +23,7 @@ elif [ "$cmd" == 'stop' ]; then
   "$wrapper" bash "cd $project && symfony server:stop"
 
 elif [ "$cmd" == 'log-php' ]; then
-  exec "$wrapper" bash "cd $project && symfony server:log"
+  exec "$wrapper" bash "cd $project && symfony server:log"; # $ tail -f ~/.symfony5/log/*.log ~/.symfony5/log/*/*.log
 
 elif [ "$cmd" == 'dump' ]; then
   exec "$wrapper" bash "cd $project && bin/console server:dump"
@@ -45,21 +45,26 @@ elif [ "$cmd" == 'dev-live' ]; then
 
 
 elif [ "$cmd" == 'phpunit' ]; then
-  exec "$wrapper" bash "cd $project && bin/phpunit"
+  # php -d memory_limit=-1 bin/phpunit
+  exec "$wrapper" bash "cd $project && bin/phpunit $*"; # --colors=never | less -S
+
+elif [ "$cmd" == 'phpunit-dump' ]; then
+  exec "$wrapper" bash "cd $project && VAR_DUMPER_FORMAT=server bin/phpunit $*"; # --colors=never | less -S
 
 elif [ "$cmd" == 'lint' ]; then
-  exec "$wrapper" bash "cd $project && bin/console lint:container"
-
-elif [ "$cmd" == 'bash' ]; then
-  exec "$wrapper" bash
+  #exec "$wrapper" bash "cd $project && bin/console lint:container"
+  exec "$wrapper" bash "cd $project && bin/console lint:container && bin/console lint:twig templates/"
 
 
+
+elif [ "$cmd" == 'log-dev' ]; then
+  exec tail -f "$repo/var/log/dev.log"
 
 elif [ "$cmd" == 'browser' ]; then
   exec x-www-browser &
 
-elif [ "$cmd" == 'log-dev' ]; then
-  exec tail -f "$repo/var/log/dev.log"
+elif [ "$cmd" == 'bash' ]; then
+  exec "$wrapper" bash $*
 
 
 
@@ -72,8 +77,8 @@ else
   cat << EOF
 Usage: cmd.sh <serve | serve-debug | stop | log-php | dump>
        cmd.sh <watch | dev-server | dev-live-php | dev-live>
-       cmd.sh <phpunit | lint | bash | bash $* >
-       cmd.sh <browser | log-dev>
+       cmd.sh <phpunit $* | phpunit-dump $* | lint>
+       cmd.sh <log-dev | browser | bash $* >
 EOF
 
 fi

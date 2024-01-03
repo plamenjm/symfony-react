@@ -16,6 +16,16 @@ class WebTest extends WebTestCase
         $this->assertSelectorTextContains('div > h3 + h3', 'Hello Stimulus!');
     }
 
+    public function testDB(): void
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/db');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('div > h3', 'Hello Symfony!');
+        $this->assertSelectorTextContains('div > h3 + h3', 'Hello DB!');
+    }
+
     public function testSpa(): void
     {
         $client = static::createClient();
@@ -38,6 +48,6 @@ class WebTest extends WebTestCase
         $response = $client->getResponse();
         $content = $response->getContent();
         $data = json_decode($content);
-        $this->assertObjectHasProperty('happyMessage', $data);
+        $this->assertObjectHasProperty('testHappyMessage', $data);
     }
 }

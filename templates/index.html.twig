@@ -11,7 +11,19 @@
         .helloContent > div:first-child {color: red;}
         .helloContent > div + div {display: flex; gap: 2em;}
     </style>
+
+
+    {# testDump #}
+    {{ dump(['dump', 'twig', 'span']) }}
+    {% if app.environment == 'dev' %}{% include 'dump_mix.html.twig' with {'mix':
+        ['dump', 'twig', 'debug toolbar']
+    } %}{% endif %}
 {% endblock %}
+
+
+{# phpunit twig {% dump %} tag. Not added: $twig->addTokenParser #}
+{#{% dump ['dump', 'twig', 'debug toolbar'] %}#}
+
 
 {% block main %}
     <div class='hello'>

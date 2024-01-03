@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Project and vendor" pattern="file[symfony]:*/&amp;&amp;!file[symfony]:.idea//*&amp;&amp;!file[symfony]:var//*&amp;&amp;!file[symfony]:public//*&amp;&amp;!file[symfony]:bin//*" />
+</component>

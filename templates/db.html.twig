@@ -19,34 +19,30 @@
     <hr/>
 
     <div class='helloContent' style=''>
+        {% set routeApi = constant('App\\Constants::APP_ROUTE_API') %}
         <a href='/api'>API Platform</a>
-        &nbsp;
+        &nbsp; {##}
         <div>Custom APIs:</div>
-        &nbsp;
-        <div><a href='{{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product') }}'>
-                {{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product') }}</a></div>
-        <div><a href='{{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product', {id: 1}) }}'>
-                {{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product', {id: 1}) }}</a>
-            (API Platform default Serializer)</div>
-        <div><a href='{{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product-id', {id: 1}) }}'>
-                {{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product-id', {id: 1}) }}</a>
-            (custom Serializer)</div>
-        &nbsp;
-        <div><a href='{{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product/name-dql', {param: 'key'}) }}'>
-                {{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product/name-dql', {param: 'key'}) }}</a>
-            (DQL)</div>
-        <div><a href='{{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product/price-qb', {param: 1999}) }}'>
-                {{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product/price-qb', {param: 1999}) }}</a>
-            (QB)</div>
-        <div><a href='{{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product/description-sql', {param: 'and'}) }}'>
-                {{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product/description-sql', {param: 'and'}) }}</a>
-            (SQL)</div>
-        <div><a href='{{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product/description-native', {param: 'and'}) }}'>
-                {{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product/description-native', {param: 'and'}) }}</a>
-            (Native Query)</div>
-        &nbsp;
-        <div><a href='{{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product/seed') }}'>
-                {{ path(constant('App\\Constant::APP_ROUTE_API') ~ '/product/seed') }}</a>
-            (Validator)</div>
+        &nbsp; {##}
+        {% set href = path(routeApi ~ '/product') %}
+        <div><a href='{{ href }}'>{{ href }}</a></div>
+        {% set href = path(routeApi ~ '/product', {id: 1}) %}
+        <div><a href='{{ href }}'>{{ href }}</a> (API Platform default Serializer)</div>
+        {% set href = path(routeApi ~ '/product-id', {id: 1}) %}
+        <div><a href='{{ href }}'>{{ href }}</a> (custom Serializer)</div>
+        &nbsp; {##}
+        {% set href = path(routeApi ~ '/product-name', {name: 'Keyboard'}) %}
+        <div><a href='{{ href }}'>{{ href }}</a></div>
+        {% set href = path(routeApi ~ '/product/name-dql', {param: 'key'}) %}
+        <div><a href='{{ href }}'>{{ href }}</a> (DQL)</div>
+        {% set href = path(routeApi ~ '/product/price-qb', {param: 1999}) %}
+        <div><a href='{{ href }}'>{{ href }}</a> (QB)</div>
+        {% set href = path(routeApi ~ '/product/description-sql', {param: 'and'}) %}
+        <div><a href='{{ href }}'>{{ href }}</a> (SQL)</div>
+        {% set href = path(routeApi ~ '/product/description-native', {param: 'and'}) %}
+        <div><a href='{{ href }}'>{{ href }}</a> (Native Query)</div>
+        &nbsp; {##}
+        {% set href = path(routeApi ~ '/product/seed') %}
+        <div><a href='{{ href }}'>{{ href }}</a> (Validator)</div>
     </div>
 {% endblock %}

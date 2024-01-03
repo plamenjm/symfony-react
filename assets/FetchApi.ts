@@ -1,7 +1,7 @@
 import { Config } from '/assets/Utils';
 
-type ModelApiParams = {test: string, happyMessage: string}
-type ModelApiPhpunit = {process: string, processOutput: string, processExitCode: string}
+type ModelApiParams = {test: string, testHappyMessage: string}
+type ModelApiPhpunit = {process: string, processStdOut: string, processStdErr: string, processExitCode: string}
 
 
 //---

@@ -10,9 +10,10 @@
 parameters:
     # moved to Constant.php
     #env(APP_ROUTE_API): '/api'
-    #app_route_api: !php/const App\Constant::APP_ROUTE_API # attribute Route(name) does not support %parameters%
+    #app_route_api: !php/const App\Constants::APP_ROUTE_API # attribute Route(name) does not support %parameters%
     #env(APP_PATH_API): '/api'
     #app_path_api: '%env(trailingSlash:APP_PATH_API)%' # ConfigEnvVarProcessor
+
 
 services:
     # default configuration for services in *this* file
