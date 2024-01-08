@@ -16,9 +16,9 @@ class Test extends TestCase
         //\App\TestDump::dd('test');
         //\App\TestDump::exception('test');
         \App\TestDump::varDump('test');
-        \App\TestDump::stdErr('test');
+        \App\Utils::stdErr(['StdErr', 'test']);
         \App\TestDump::dump('test');
-        //\App\TestDump::logger('test', $logger); //? Not working
+        //\App\TestDump::logger('test', $logger); // to-do: Not working
 
 
         //$this->assertTrue(true);

@@ -53,17 +53,21 @@ class WebController extends BaseController //implements \Symfony\Contracts\Servi
     public function index(
         //#[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: \Psr\Log\LoggerInterface::class, lazy: true)]
         //\Psr\Log\LoggerInterface $logger, // lazy by proxy
+
+        //?\Symfony\Component\HttpKernel\Profiler\Profiler $profiler,
     ): Response
     {
-        if ($_SERVER['APP_ENV'] !== 'test') { // testDump
-            //\App\TestDump::dd(['index']);
-            //\App\TestDump::exception(['index']);
-            //\App\TestDump::varDump(['index']);
-            \App\TestDump::stdErr(['index']);
-            //\App\TestDump::dump(['index']);
-            \App\TestDump::logger(['index'], $this->getLogger()); //$this->locateLogger() //$logger
-            \App\TestDump::console(['index']);
+        if (!\App\Utils::isTest()) { // testDump
+            //\App\TestDump::dd('index');
+            //\App\TestDump::exception('index');
+            //\App\TestDump::varDump('index');
+            \App\Utils::stdErr(['StdErr', 'index']);
+            //\App\TestDump::dump('index');
+            \App\TestDump::logger('index', $this->getLogger()); //$this->locateLogger() //$logger
+            echo \App\Utils::JSConsole('index');
         }
+
+        //$profiler?->disable();
 
 
         return $this->render('index.html.twig');

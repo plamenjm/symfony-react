@@ -35,6 +35,8 @@ class ApiService implements \Symfony\Contracts\Service\ServiceSubscriberInterfac
 
         //#[\Symfony\Component\DependencyInjection\Attribute\Autowire(env: 'APP_ENV')]
         //private readonly string $APP_ENV,
+        //#[\Symfony\Component\DependencyInjection\Attribute\Autowire(param: 'kernel.environment')]
+        //private readonly string $kernelEnv,
     )
     {}
 
@@ -62,13 +64,15 @@ class ApiService implements \Symfony\Contracts\Service\ServiceSubscriberInterfac
     public function testHappyMessage(
         //#[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: \Psr\Log\LoggerInterface::class, lazy: true)]
         //\Psr\Log\LoggerInterface $logger, // lazy by proxy
+
+        //\App\Kernel $kernel = null,
     ): string
     {
-        if ($_SERVER['APP_ENV'] !== 'test') { // testDump
+        if (!\App\Utils::isTest()) { // testDump
             //\App\TestDump::dd('message');
             //\App\TestDump::exception('message');
             //\App\TestDump::varDump('message');
-            \App\TestDump::stdErr('message');
+            \App\Utils::stdErr('StdErr' . 'message');
             \App\TestDump::dump('message');
             \App\TestDump::logger('message', $this->logger()); //$this->getLogger() //$this->locateLogger() //$logger
         }

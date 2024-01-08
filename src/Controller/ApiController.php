@@ -67,21 +67,18 @@ class ApiController extends BaseController //implements \Symfony\Contracts\Servi
     #[Route('/params', name: '/params', methods: ['GET'])]
     public function params(
         ApiService $apiService,
-        //#[\Symfony\Component\DependencyInjection\Attribute\Autowire(env: 'APP_ENV')]
-        //string $APP_ENV,
 
         //#[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: \Psr\Log\LoggerInterface::class, lazy: true)]
         //\Psr\Log\LoggerInterface $logger, // lazy by proxy
-
     ): JsonResponse
     {
-        if ($_SERVER['APP_ENV'] !== 'test') { // testDump
-            //\App\TestDump::dd(['params']);
-            //\App\TestDump::exception(['params']);
-            //\App\TestDump::varDump(['params']);
-            //\App\TestDump::stdErr(['params']);
-            //\App\TestDump::dump(['params']);
-            \App\TestDump::logger(['params'], $this->getLogger()); //$this->locateLogger() //$logger
+        if (!\App\Utils::isTest()) { // testDump
+            //\App\TestDump::dd('params');
+            //\App\TestDump::exception('params');
+            //\App\TestDump::varDump('params');
+            //\App\Utils::stdErr('StdErr' . 'params');
+            //\App\TestDump::dump('params');
+            \App\TestDump::logger('params', $this->getLogger()); //$this->locateLogger() //$logger
         }
 
 
@@ -94,7 +91,7 @@ class ApiController extends BaseController //implements \Symfony\Contracts\Servi
         //return new JsonResponse($res, Response::HTTP_OK, [
         //return JsonResponse::fromJsonString(json_encode($res), Response::HTTP_OK, [
         return $this->json($res, Response::HTTP_OK, [
-            'Symfony-Debug-Toolbar-Replace' => '1', // testDump
+            //'Symfony-Debug-Toolbar-Replace' => '1', // replaced with EventListener(kernel.response)
         ]);
 
         // to-do: $response->getContent() is empty in tests

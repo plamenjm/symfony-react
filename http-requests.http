@@ -1,6 +1,16 @@
 
 ###
 # @no-cookie-jar
+GET {{server}}{{api}}/params
+
+
+
+
+###
+
+
+###
+# @no-cookie-jar
 GET {{server}}/index
 
 
@@ -14,7 +24,11 @@ GET {{server}}/db
 GET {{server}}/spa
 
 
+
+
 ###
+
+
 ###
 # @no-cookie-jar
 GET {{server}}{{api}}/params
@@ -25,7 +39,11 @@ GET {{server}}{{api}}/params
 GET {{server}}{{api}}/phpunit
 
 
+
+
 ###
+
+
 ###
 # @no-cookie-jar
 GET {{server}}{{api}}/product

@@ -15,7 +15,7 @@ abstract class BaseController extends AbstractController
     )
     {
         // phpunit twig {% dump %} tag. OR use twig:  {% if app.environment == 'dev' %}{% include 'dump_mix.html.twig' %}
-        //if ($twig && $_SERVER['APP_ENV'] === 'test' && !$twig->hasExtension(\Symfony\Bridge\Twig\Extension\DumpExtension::class))
+        //if ($twig && \App\Utils::isTest() && !$twig->hasExtension(\Symfony\Bridge\Twig\Extension\DumpExtension::class))
         //    //$twig->addExtension(new \Symfony\Bridge\Twig\Extension\DumpExtension(new \Symfony\Component\VarDumper\Cloner\VarCloner()));
         //    $twig->addTokenParser(new \Symfony\Bridge\Twig\TokenParser\DumpTokenParser());
 

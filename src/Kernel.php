@@ -12,6 +12,28 @@ class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
 
+    private const dumpEnableStdErrAndCollect = false; // dump to StdErr, JS console.log (collect) // replaced with DumpClonerDecorator
+
+
+    //---
+
+    private \Closure $dumpHandlerPrev;
+
+    public function boot(): void
+    {
+        parent::boot();
+
+        if ($this->container->getParameter('kernel.debug')) {
+            if (self::dumpEnableStdErrAndCollect) $this->dumpHandlerPrev = \Symfony\Component\VarDumper\VarDumper::setHandler(function ($var, string $label = null) {
+                \App\Utils::stdErr($var); // to-do: if dump_destination is not php://stderr
+
+                \App\EventListener\DumpSubscriber::dumpCollect($var);
+
+                ($this->dumpHandlerPrev)($var, $label);
+            });
+        }
+    }
+
     protected function build(ContainerBuilder $container): void
     {
         //dump('src/Kernel: build'); //$this->getKernelParameters()
