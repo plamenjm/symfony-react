@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from "react";
-import { Constants } from '/assets/Utils';
-import { fetchApi, FetchApiPhpunit } from '/assets/FetchApi';
+import React, {useCallback, useState} from 'react';
+import {Constant} from '/assets/Constant';
+import {fetchApi, FetchApiPhpunit} from '/assets/FetchApi';
 import '/assets/react/Page.css';
 
 interface StateApiPhpunit extends FetchApiPhpunit {loading?: boolean}
@@ -13,7 +13,7 @@ export function PagePhpunit() {
         setFetch({loading: true})
         fetchApi(resource).then(({error, json}) =>
             setFetch({loading: false, json,
-                error: error ?? (json?.processStdOut ? undefined : Constants.ErrorUnexpected)})
+                error: error ?? (json?.processStdOut ? undefined : Constant.ErrorUnexpected)})
         )
     }, [])
 

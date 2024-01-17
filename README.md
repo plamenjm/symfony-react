@@ -1,12 +1,28 @@
 # symfony-react
 
-Playground (Symfony, SQLite, ReactJS)
+Playground - Symfony, SQLite, phpunit; WebSocket; React.js, Chart.js, TypeScript
 
-![image](https://github.com/plamenjm/symfony-react/assets/56994434/62e8530d-bc4a-4b7b-b10e-57dca5b887d7)
 
-![image](https://github.com/plamenjm/symfony-react/assets/56994434/61e046e9-557a-40a5-8426-9a6322100cfd)
+### Live Trades - live chart, axis Y linear/logarithmic, axis X hourly/daily/weekly, USD/EUR
+
+![image](https://github.com/plamenjm/symfony-react/assets/56994434/28097db8-8d40-40df-909d-2aeda0996b68)
+
+![image](https://github.com/plamenjm/symfony-react/assets/56994434/0bd6d60b-036d-45ec-a3c6-70ba4b160c57)
+
+![image](https://github.com/plamenjm/symfony-react/assets/56994434/48977f05-04c4-4526-b3a8-47174bfc4a25)
+
+![image](https://github.com/plamenjm/symfony-react/assets/56994434/378d8d29-b4ca-4d23-ac84-e683c46328ad)
+
+
+### `dump()` to JS console and to StdErr:
+
+![image](https://github.com/plamenjm/symfony-react/assets/56994434/ce4e20bd-942b-4926-b913-79fd3aac66f9)
+
+
+### phpunit
 
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/b5f25e40-dd6f-45ca-bbc4-9b2c8c766c72)
+
 
 ---
 
@@ -43,11 +59,19 @@ $ bin/console doctrine:migrations:diff; # bin/console make:migration
 $ bin/console doctrine:migrations:migrate
 $ bin/console dbal:run-sql 'SELECT * FROM ...'
 
+$ npm install --save-dev wscat
+$ npm install react-use-websocket
+$ npm install react-chartjs-2
+$ npm install --save-dev @faker-js/faker
+$ composer require ratchet/pawl
+$ composer require cboden/ratchet; # from RatchetSymfony7
+
 todo: symfony web security
 todo: symfony db users, authentication
 todo: react state (redux, mobx)
 todo: bootstrap, sass, styled-components
 ```
+
 
 ---
 

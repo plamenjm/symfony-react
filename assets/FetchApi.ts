@@ -1,4 +1,4 @@
-import { Config } from '/assets/Utils';
+import {Config} from '/assets/Config';
 
 type ModelApiParams = {test: string, testHappyMessage: string}
 type ModelApiPhpunit = {process: string, processStdOut: string, processStdErr: string, processExitCode: string}
@@ -30,7 +30,7 @@ export function fetchApi<FetchSome extends FetchApi>(resource: FetchResource): P
     credentials: 'omit',
     cache: 'no-store',
   }
-  return fetch(Config.FetchApi + resource, request)
+  return fetch(Config.FetchApi.value + resource, request)
       .then(response => {
         return response.json()
             .then(json => {
