@@ -15,7 +15,9 @@ export const Utils = Object.freeze({
             //noinspection ExceptionCaughtLocallyJS
             throw new Error()
         } catch (ex) {
-            return (ex as Error).stack?.split('\n')[idx]?.split('@')[0] ?? '?'
+            return ex instanceof Error
+                ? ex.stack?.split('\n')[idx].split('<')[0].split('@')[0].split('/').reverse()[0]
+                : '?'
         }
     },
 
@@ -23,4 +25,11 @@ export const Utils = Object.freeze({
         console.log(this.caller(2), ...args)
         return false
     },
+
+    dateTimeUTC: function(date: undefined | string | number | Date = undefined) {
+        if (!(date instanceof Date)) date = date ? new Date(date) : new Date()
+        return date.toISOString()
+            .split('T').join(' ')
+            .split('.').slice(0, -1).join('')
+    }
 })

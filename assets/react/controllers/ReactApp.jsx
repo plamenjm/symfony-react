@@ -1,6 +1,6 @@
 import React, {useMemo} from 'react';
 import {createBrowserRouter, Outlet, RouterProvider} from 'react-router-dom';
-import {Config} from '/assets/Config';
+import {Config, setConfig} from '/assets/Config';
 import {NavMenu} from '/assets/react/components/NavMenu';
 import {PageParams} from '/assets/react/PageParams';
 import {PagePhpunit} from '/assets/react/PagePhpunit';
@@ -22,10 +22,20 @@ function AppMenu() {
     </>
 }
 
-export default function ReactApp({path, urlApi}) {
-    if (!Config.FetchApi.value.startsWith('http')) Config.FetchApi.value = urlApi
-      ? urlApi + '/'
-      : window.location.origin + Config.FetchApi.value
+export default function ReactApp({path, appJSConfig}) {
+    const appConfigEnable = false // appJSConfig from PHP controller (only for React/SPA) // moved to app.js
+    if (appConfigEnable) {
+        const cfg = JSON.parse(appJSConfig)
+        const fetchApi = Config.FetchApi.startsWith('http') || cfg.FetchApi
+        Object.keys(cfg).forEach(key => Config[key]
+          && (!Array.isArray(Config[key]) || !Config[key].length)
+          && delete cfg[key])
+        if (!fetchApi) cfg.FetchApi = window.location.origin + Config.FetchApi // backup
+        setConfig(cfg)
+    }
+
+
+    //---
 
     const router = useMemo(() => createBrowserRouter([
         {path, element: <AppMenu/>, children: [

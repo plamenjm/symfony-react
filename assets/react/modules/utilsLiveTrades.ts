@@ -19,7 +19,7 @@ const lv = {
     EnumView: {Hour: 'hour', Day: 'day', Week: 'week'},
     RBView: 'view',
 
-    EnumSymbol: {...Config.LiveTradesSymbol},
+    EnumSymbol: {USD: 'usd', EUR: 'eur'},
     RBSymbol: 'symbol',
 
     EnumAxis: {Line: 'linear', Log: 'logarithmic'},
@@ -29,6 +29,7 @@ const lv = {
 export const LV = Object.freeze({
     ...lv,
 
+    EnumEvent: {USD: 'tBTCUSD', EUR: 'tBTCEUR'},
     EventsInit: {min: 0, max: 0, avg: 0, count: 0, data: []},
 
     ChartTicks: {Hour: 12, Day: 24, Week: 7},

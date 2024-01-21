@@ -31,26 +31,22 @@ class Utils
 
     //---
 
-    private const dumpStdErrUseCliDumper = true; // CliDumper or print_r
+    public static function dateTimeUTC(null | int | string | \DateTime $date = null): string {
+        if (!$date)
+            $date = new \DateTime();
+        else if (is_int($date))
+            $date = (new \DateTime())->setTimestamp($date);
+        else if (!($date instanceof \DateTime))
+            $date = new \DateTime($date);
 
-    public static function stdErrDump(mixed $var): void {
-        $dumper = new \Symfony\Component\VarDumper\Dumper\CliDumper('php://stderr', null,
-            \Symfony\Component\VarDumper\Dumper\AbstractDumper::DUMP_STRING_LENGTH);
-        $dumper->dump((new \Symfony\Component\VarDumper\Cloner\VarCloner())->cloneVar($var));
+        return $date
+            ->setTimezone(new \DateTimeZone('UTC'))
+            ->format('Y-m-d H:i:s');
     }
 
-    public static function stdErrPrint(mixed $var): void {
-        //$stderr = defined('STDERR') ? STDERR : fopen('php://stderr', 'w'); // API Exception: Undefined constant "...\STDERR"
-        //fwrite($stderr, print_r($var, TRUE));
-        file_put_contents('php://stderr', print_r($var, TRUE));
-    }
-
-    public static function stdErr(mixed $var): void // StdErr: symfony server:log; phpunit
+    public static function errorObjNotFound(string $obj, string $by = ''): string
     {
-        if (self::dumpStdErrUseCliDumper)
-            \App\Utils::stdErrDump($var);
-        else
-            \App\Utils::stdErrPrint($var);
+        return "\"$obj\" object not found" . (!$by ? '' : " by \"$by\"") . ".";
     }
 
 
@@ -96,8 +92,25 @@ class Utils
 
     //---
 
-    public static function errorObjNotFound(string $obj, string $by = ''): string
+    private const dumpStdErrUseCliDumper = true; // CliDumper or print_r
+
+    public static function stdErrDump(mixed $var): void {
+        $dumper = new \Symfony\Component\VarDumper\Dumper\CliDumper('php://stderr', null,
+            \Symfony\Component\VarDumper\Dumper\AbstractDumper::DUMP_STRING_LENGTH);
+        $dumper->dump((new \Symfony\Component\VarDumper\Cloner\VarCloner())->cloneVar($var));
+    }
+
+    public static function stdErrPrint(mixed $var): void {
+        //$stderr = defined('STDERR') ? STDERR : fopen('php://stderr', 'w'); // API Exception: Undefined constant "...\STDERR"
+        //fwrite($stderr, print_r($var, TRUE));
+        file_put_contents('php://stderr', print_r($var, TRUE));
+    }
+
+    public static function stdErr(mixed $var): void // StdErr: symfony server:log; phpunit
     {
-        return "\"$obj\" object not found" . (!$by ? '' : " by \"$by\"") . ".";
+        if (self::dumpStdErrUseCliDumper)
+            \App\Utils::stdErrDump($var);
+        else
+            \App\Utils::stdErrPrint($var);
     }
 }

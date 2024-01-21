@@ -73,7 +73,7 @@ final class DumpSubscriber implements EventSubscriberInterface
                 $request = $event->getRequest();
                 if (!$request->isXmlHttpRequest()
                     //&& $request->query->has('profilerReplace')
-                    && str_starts_with($request->attributes->get('_route'), \App\Constants::APP_ROUTE_API))
+                    && str_starts_with($request->attributes->get('_route'), \App\Constant::APP_ROUTE_API))
                     $event->getResponse()->headers->set('Symfony-Debug-Toolbar-Replace', '1');
             }
         }

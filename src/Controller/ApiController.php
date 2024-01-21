@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route(\App\Constants::APP_PATH_API, name: \App\Constants::APP_ROUTE_API, options: ['utf8' => true])] //#[Route('%app_path_api%'...
+#[Route(\App\Constant::APP_PATH_API, name: \App\Constant::APP_ROUTE_API, options: ['utf8' => true])] //#[Route('%app_path_api%'...
 class ApiController extends BaseController //implements \Symfony\Contracts\Service\ServiceSubscriberInterface
 {
     private const ROUTE_PRODUCT = '/product';
@@ -238,6 +238,6 @@ class ApiController extends BaseController //implements \Symfony\Contracts\Servi
 
         $entity->persist($product);
         $entity->flush();
-        return $this->redirectToRoute(\App\Constants::APP_ROUTE_API . self::ROUTE_PRODUCT, ['id' => $product->getId()]);
+        return $this->redirectToRoute(\App\Constant::APP_ROUTE_API . self::ROUTE_PRODUCT, ['id' => $product->getId()]);
     }
 }

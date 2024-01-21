@@ -3,26 +3,30 @@
 
 //---
 
-export const Config = Object.freeze({
+export const setConfig = (config: object) => Config = Object.freeze({...Config, ...config}) // appJSConfig from PHP controller
+
+export let Config = Object.freeze({
     DevLogEnable: false,
     DevFakerEnable: true,
 
     //---
 
-    FetchApi: Object.seal({value: '/api/'}),
+    FetchApi: '', //'/api/', // appJSConfig from PHP controller. See: Config.php, WebController.php
 
 
     //---
 
-    //LiveTradesUrl: 'ws://localhost:8002'
-    LiveTradesUrl: 'wss://api.bitfinex.com/ws/1',
-    LiveTradesSymbol: {USD: 'tBTCUSD', EUR: 'tBTCEUR'},
-    LiveTradesSubscribe: [
-        '{"event": "subscribe", "channel": "trades", "pair": "BTCUSD"}',
-        '{"event": "subscribe", "channel": "trades", "pair": "BTCEUR"}',
-    ],
+    LiveTradesUrl: 'ws://localhost:8002',
+    //LiveTradesSubscribe: [
+    //    '{"event": "subscribe", "channel": "trades", "pair": "BTCUSD"}',
+    //    '{"event": "subscribe", "channel": "trades", "pair": "BTCEUR"}',
+    //],
+
+    //LiveTradesUrl: '', //'wss://api.bitfinex.com/ws/1', // appJSConfig from PHP controller. See: Config.php, WebController.php
+    LiveTradesSubscribe: [''], // appJSConfig from PHP controller. See: Config.php, WebController.php
+
     LiveTradesAutoConnect: false,
-    LiveTradesMaxMessages: 10,
+    LiveTradesKeepMessages: 10,
     LiveTradesAggregateEvents: true,
 })
 

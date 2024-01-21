@@ -1,21 +1,22 @@
 import React from 'react';
 import {Config} from '/assets/Config';
 import {LV, TSChartTicks, TSEventsView, TSLogMessage, TSTradeMessage} from '/assets/react/modules/utilsLiveTrades';
-import {TSStateSetCB} from '/assets/Utils';
-import {chartTicksDay, chartTicksHour, chartTicksWeek} from '/assets/react/modules/hookLiveTrades';
+import {TSStateSetCB, Utils} from '/assets/Utils';
 
 
 //---
 
-const maxMessages = Config.LiveTradesMaxMessages < 2 ? 1 : Config.LiveTradesMaxMessages
+const keepMessages = Config.LiveTradesKeepMessages < 2 ? 1 : Config.LiveTradesKeepMessages
 
 
 //---
+
+const isSymbolType = (symbol: string, type: string) =>
+    symbol === LV.EnumSymbol.USD && type === LV.EnumEvent.USD
+    || symbol === LV.EnumSymbol.EUR && type === LV.EnumEvent.EUR
 
 const eventsFilterSymbol = (events: TSTradeMessage[], symbol: string) =>
-    events.filter(event =>
-        symbol === LV.EnumSymbol.USD && event.type === Config.LiveTradesSymbol.USD
-        || symbol === LV.EnumSymbol.EUR && event.type === Config.LiveTradesSymbol.EUR)
+    events.filter(event => isSymbolType(symbol, event.type))
 
 const eventsFilterDate = (events: TSTradeMessage[], from: number, to: number) =>
     events.filter(event => event.date > from && event.date <= to)
@@ -79,41 +80,50 @@ export function processEvents(events: TSTradeMessage[],
 export function useLiveTradesEvents(stateDate: Date, setDate: TSStateSetCB<Date>, stateView: string, stateSymbol: string, ticks: TSChartTicks) {
     const [stateMessages, setMessages] = React.useState<TSLogMessage[]>([])
     const [stateEvents, setEvents] = React.useState<TSEventsView>(LV.EventsInit)
-    const [stateProcess, setProcess] = React.useState(false)
+    const [statePending, setPending] = React.useState(0)
 
-    const onMessage = (msg: TSLogMessage) => setMessages(state => [
-        {...msg, idx: 1 + (state[0]?.idx ?? 0)},
-        ...state.slice(0, maxMessages),
-        ...state.slice(maxMessages, -maxMessages).filter(msg => !('data' in msg)),
-        ...(state.length - maxMessages <= 0 ? [] : state.slice(-Math.min(maxMessages, state.length - maxMessages))),
-    ])
+    const getMessages = (keepState?: TSLogMessage[]) => {
+        //const keepMessages = 1000 // test
+        const state = keepState ? keepState : stateMessages
+        return [
+            ...state.slice(0, keepMessages),
+            ...(!keepState ? [{idx: -1, data: '...'}] : state.slice(keepMessages, -keepMessages).filter(msg => !('data' in msg))),
+            ...(state.length - keepMessages <= 0 ? [] : state.slice(-Math.min(keepMessages, state.length - keepMessages))),
+        ]
+    }
+
+    function onMessage(message: string | TSLogMessage) {
+        const msg = typeof message === 'object' ? message : {data: Utils.dateTimeUTC() + ' ' + message}
+        setMessages(state => [{...msg, idx: 1 + (state[0]?.idx ?? 0)}, ...getMessages(state)])
+    }
 
     function onClear() {
         setMessages([])
         setEvents(LV.EventsInit)
     }
 
-    const onProcess = () => setProcess(true)
-
-    function onEvents(events?: TSTradeMessage[]) {
-        if (events && events[0].date > ticks[ticks.length - 1].value) {
+    function onEvent(events?: TSTradeMessage[]) {
+        if (events && isSymbolType(stateSymbol, events[0].type)
+            && events[0].date > ticks[ticks.length - 1].value) {
             const date = new Date()
             if (LV.datePlusTick(date, stateView)) setDate(date)
         }
 
         //setEvents(stateEvents => {
-        const next = processEvents(events ? events
-                : stateMessages.filter(msg => !('data' in msg)) as TSTradeMessage[],
-            stateView, stateSymbol, ticks[0].value, ticks[ticks.length - 1].value,
-            events ? stateEvents : undefined)
-        //    return next ?? stateEvents
+            const newState = processEvents(events ? events
+                    : stateMessages.filter(msg => !('data' in msg)) as TSTradeMessage[],
+                stateView, stateSymbol, ticks[0].value, ticks[ticks.length - 1].value,
+                events ? stateEvents : undefined)
+        //    return newState ?? stateEvents
         //})
-        if (next) setEvents(next)
+        if (newState) setEvents(newState)
     }
 
     React.useLayoutEffect(() => {
-        onEvents()
-    }, [stateProcess, stateView, stateSymbol, ticks])
+        onEvent()
+    }, [statePending, stateView, stateSymbol, ticks])
 
-    return {stateMessages, setMessages, onMessage, onClear, onProcess, stateEvents, onEvents}
+    const onEvents = () => setPending(state => state + 1)
+
+    return {stateMessages, setMessages, getMessages, onMessage, onClear, stateEvents, onEvent, onEvents}
 }

@@ -30,7 +30,7 @@ export function fetchApi<FetchSome extends FetchApi>(resource: FetchResource): P
     credentials: 'omit',
     cache: 'no-store',
   }
-  return fetch(Config.FetchApi.value + resource, request)
+  return fetch(Config.FetchApi + resource, request)
       .then(response => {
         return response.json()
             .then(json => {

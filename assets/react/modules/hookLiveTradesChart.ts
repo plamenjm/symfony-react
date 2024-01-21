@@ -77,12 +77,12 @@ export function getChartOptionsData(title: string, titleY: string, view: string,
 export function useLiveTradesChart(stateEvents: TSEventsView,
                                    stateDate: Date, stateView: string, stateSymbol: string, stateAxis: string,
                                    ticks: TSChartTicks) {
-    //const refChart = React.useRef<Chart<'line'>>(null)
     const refChart = React.useRef<ChartJSOrUndefined<'line'>>(null)
 
-    const {options, data} = React.useMemo(() => {
+    const memoChart = React.useMemo(() => {
         //const title = stateDate.toISOString().slice(0, 10)
         const title = stateDate.toISOString().split(/[T.]/).slice(0, 2).join(' ')
+            + ' / events: ' + stateEvents.data.length
 
         const titleY = 'Bitcoin price' + (stateAxis === LV.EnumAxis.Line ? ' in ' : ' Log in ')
             + (stateSymbol !== LV.EnumSymbol.USD ? '' : 'US Dollars')
@@ -93,5 +93,5 @@ export function useLiveTradesChart(stateEvents: TSEventsView,
         return getChartOptionsData(title, titleY, stateView, stateSymbol, stateAxis, ticks, stateEvents) //label
     }, [stateEvents, stateDate, stateView, stateSymbol, stateAxis])
 
-    return {refChart, options, data}
+    return {refChart, ...memoChart}
 }

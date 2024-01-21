@@ -57,6 +57,13 @@ export function useLiveTrades() {
     const [stateSymbol, setSymbol] = React.useState(LV.EnumSymbol.USD)
     const [stateAxis, setAxis] = React.useState(LV.EnumAxis.Line)
 
+    const memoTicks = React.useMemo(() => {
+        return stateView === LV.EnumView.Hour ? chartTicksHour(stateDate)
+            : stateView === LV.EnumView.Day ? chartTicksDay(stateDate)
+                : stateView === LV.EnumView.Week ? chartTicksWeek(stateDate)
+                    : []
+    }, [stateDate, stateView])
+
     function onDate(direction: 1 | -1) {
         const date = new Date(stateDate)
         if (stateView === LV.EnumView.Hour)
@@ -79,12 +86,5 @@ export function useLiveTrades() {
     const radioSymbol = (value: string) => Jsx.radio(LV.RBSymbol, value, stateSymbol, setSymbol)
     const radioAxis = (value: string) => Jsx.radio(LV.RBAxis, value, stateAxis, setAxis)
 
-    const ticks = React.useMemo(() => {
-            return stateView === LV.EnumView.Hour ? chartTicksHour(stateDate)
-                : stateView === LV.EnumView.Day ? chartTicksDay(stateDate)
-                    : stateView === LV.EnumView.Week ? chartTicksWeek(stateDate)
-                        : []
-    }, [stateDate, stateView])
-
-    return {stateDate, setDate, onPrev, onNext, stateView, radioView, stateSymbol, radioSymbol, stateAxis, radioAxis, ticks}
+    return {stateDate, setDate, onPrev, onNext, stateView, radioView, stateSymbol, radioSymbol, stateAxis, radioAxis, ticks: memoTicks}
 }

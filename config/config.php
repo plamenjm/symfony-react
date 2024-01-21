@@ -1,7 +1,7 @@
 <?php
 
-$container;
 
+//---
 
 # replaced with Constant.php
 ////$container->setParameter('env(APP_PATH_API)', '/api/');
@@ -14,8 +14,14 @@ $container;
 //}
 
 
-$container->setAlias(\Symfony\Component\HttpKernel\Profiler\Profiler::class, 'profiler');
+$container->setParameter('liveTradesPort', 8002);
+$container->setParameter('liveTradesListen', '10.0.2.100'); // docker
+//$container->setParameter('liveTradesListen', '127.0.0.1');
 
+
+//---
+
+$container->setAlias(\Symfony\Component\HttpKernel\Profiler\Profiler::class, 'profiler');
 
 return function(\Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator $container): void {
     $dumpTwigTagEnable = false; // phpunit twig {% dump %} tag // to-do: debug.var_dumper.cloner?

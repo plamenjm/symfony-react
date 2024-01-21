@@ -1,4 +1,4 @@
-import React, {ForwardedRef, useRef} from 'react';
+import React, {useRef} from 'react';
 import {ChartData} from 'chart.js';
 import {Line as ChartLine} from 'react-chartjs-2';
 import {ChartJSOrUndefined} from 'react-chartjs-2/dist/types';
@@ -13,35 +13,42 @@ import {useLiveTradesMessages} from '/assets/react/modules/hookLiveTradesMessage
 import {useLiveTradesChart} from '/assets/react/modules/hookLiveTradesChart';
 import '/assets/react/Page.css';
 
-function DevChartLine(props: {refChart: ForwardedRef<ChartJSOrUndefined<'line'>>, options: object, data: ChartData<'line'>}) {
-    const refRender = useRef(0)
-    if (Config.DevLogEnable) Utils.log('render', ++refRender.current)
-    return <ChartLine ref={props.refChart} options={props.options} data={props.data}/>
-}
+const MemoChartLine = React.memo(
+    React.forwardRef<ChartJSOrUndefined<'line'>, {options: object, data: ChartData<'line'>}>(
+    (props, ref) => {
+        ref = ref as React.RefObject<ChartJSOrUndefined<'line'>>
+        if (Config.DevLogEnable) {
+            const refRender = useRef(0)
+            Utils.log('render', ++refRender.current, props.data.datasets[0].data.length) //ref.current?.data.datasets?.[0].data.length
+        }
+
+        return <ChartLine ref={ref} options={props.options} data={props.data}/>
+    }
+))
 
 export function PageLiveTrades() {
     const {stateDate, setDate, onPrev, onNext, stateView, radioView, stateSymbol, radioSymbol, stateAxis, radioAxis, ticks}
         = useLiveTrades()
-    const {stateMessages, setMessages, onMessage, onClear, onProcess, stateEvents, onEvents}
+    const {stateMessages, setMessages, getMessages, onMessage, onClear, stateEvents, onEvent, onEvents}
         = useLiveTradesEvents(stateDate, setDate, stateView, stateSymbol, ticks)
-    const {stateUrl, onConnect, onDisconnect, lastMessage, lastJsonMessage}
-        = useLiveTradesWebSocket(stateMessages.length === 0, setMessages, onMessage, onClear, onProcess)
-    useLiveTradesMessages(lastMessage, lastJsonMessage, setMessages, onMessage, onEvents)
+    const {stateUrl, onConnect, onDisconnect, reconnect, lastMessage, lastJsonMessage}
+        = useLiveTradesWebSocket(stateMessages.length === 0, setMessages, onMessage, onClear, onEvents)
+    useLiveTradesMessages(lastMessage, lastJsonMessage, setMessages, onMessage, onEvent, onEvents)
     const {refChart, options, data}
         = useLiveTradesChart(stateEvents, stateDate, stateView, stateSymbol, stateAxis, ticks)
 
     if (Config.DevLogEnable) {
         const refRender = useRef(0)
-        Utils.log('render', ++refRender.current, stateMessages.length, stateEvents.data.length)
+        Utils.log('render', ++refRender.current, stateEvents.data.length, stateMessages.length)
     }
 
     return (
         <div className='pageContent'>
             <div style={{display: 'flex'}}>
                 <div>
-                    <button disabled={!!stateUrl} onClick={onConnect}>Connect</button>
+                    <button disabled={!!stateUrl || reconnect} onClick={onConnect}>Connect</button>
                     <br/>
-                    <button disabled={!stateUrl} onClick={onDisconnect}>Disconnect</button>
+                    <button disabled={!stateUrl && !reconnect} onClick={onDisconnect}>Disconnect</button>
                     <br/>
                     <button onClick={onClear}>Clear</button>
                     {/*<br/>
@@ -92,12 +99,11 @@ export function PageLiveTrades() {
                 </div>
             </div>
 
-            {Config.DevLogEnable ? <DevChartLine refChart={refChart} options={options} data={data}/>
-                : <ChartLine ref={refChart} options={options} data={data}/>}
+            <MemoChartLine ref={refChart} options={options} data={data}/>
 
             <pre>
-                {stateMessages.map(msg => <React.Fragment key={msg.idx}>
-                    {'data' in msg ? msg.data : JSON.stringify({...msg, date: (new Date(msg.date)).toISOString()})}
+                {getMessages().map(msg => <React.Fragment key={msg.idx}>
+                    {'data' in msg ? msg.data : JSON.stringify({...msg, date: Utils.dateTimeUTC(msg.date)})}
                     <br/>
                 </React.Fragment>)}
             </pre>
