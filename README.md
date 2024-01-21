@@ -51,7 +51,7 @@ Playground - Symfony, SQLite, phpunit; WebSocket; React.js, Chart.js, TypeScript
 
 <details><summary>
 
-### done installs and todo notes
+#### done installs and todo notes
 
 </summary>
 
@@ -106,7 +106,7 @@ todo: bootstrap, sass, styled-components
 
 <details><summary>
 
-cmd.sh
+##### cmd.sh
 
 </summary>
 
@@ -123,7 +123,7 @@ Usage: cmd.sh <serve | serve-debug | stop | log-php | dump>
 
 <details><summary>
 
-notes/hints
+###### notes/hints
 
 </summary>
 
