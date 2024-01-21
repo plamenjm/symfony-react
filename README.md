@@ -3,9 +3,11 @@
 Playground - Symfony, SQLite, phpunit; WebSocket; React.js, Chart.js, TypeScript
 
 
----
+<details><summary>
 
 ### Live Trades frontend - WebSocket client, live chart, back/forward hour/day/week
+
+</summary>
 
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/28097db8-8d40-40df-909d-2aeda0996b68)
 
@@ -15,29 +17,43 @@ Playground - Symfony, SQLite, phpunit; WebSocket; React.js, Chart.js, TypeScript
 
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/378d8d29-b4ca-4d23-ac84-e683c46328ad)
 
+</details>
 
----
+<details><summary>
 
 ### Live Trades backend - WebSocket client and server
 
+</summary>
+
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/718e3445-ce5a-4644-b7d8-aade9264b318)
 
+</details>
 
----
+<details><summary>
 
-### `dump()` to JS console and to StdErr:
+### `dump()` to JS console and to StdErr
+
+</summary>
 
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/ce4e20bd-942b-4926-b913-79fd3aac66f9)
 
+</details>
 
----
+<details><summary>
 
 ### phpunit
 
+</summary>
+
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/b5f25e40-dd6f-45ca-bbc4-9b2c8c766c72)
 
+</details>
 
----
+<details><summary>
+
+### done installs and todo notes
+
+</summary>
 
 ```
 $ symfony new symfony-react
@@ -86,10 +102,13 @@ todo: react state (redux, mobx)
 todo: bootstrap, sass, styled-components
 ```
 
+</details>
 
----
+<details><summary>
 
 cmd.sh
+
+</summary>
 
 ```
 Helper script for symfony and podman (docker) container.
@@ -100,10 +119,16 @@ Usage: cmd.sh <serve | serve-debug | stop | log-php | dump>
        cmd.sh <log-dev | browser | bash $* >
 ```
 
----
+</details>
 
-prod hints
+<details><summary>
+
+notes/hints
+
+</summary>
 
 ```
 $ bin/console lint:container
 ```
+
+</details>
