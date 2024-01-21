@@ -3,7 +3,9 @@
 Playground - Symfony, SQLite, phpunit; WebSocket; React.js, Chart.js, TypeScript
 
 
-### Live Trades - live chart, axis Y linear/logarithmic, axis X hourly/daily/weekly, USD/EUR
+---
+
+### Live Trades frontend - WebSocket client, live chart, back/forward hour/day/week
 
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/28097db8-8d40-40df-909d-2aeda0996b68)
 
@@ -14,10 +16,21 @@ Playground - Symfony, SQLite, phpunit; WebSocket; React.js, Chart.js, TypeScript
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/378d8d29-b4ca-4d23-ac84-e683c46328ad)
 
 
+---
+
+### Live Trades backend - WebSocket client and server
+
+![image](https://github.com/plamenjm/symfony-react/assets/56994434/718e3445-ce5a-4644-b7d8-aade9264b318)
+
+
+---
+
 ### `dump()` to JS console and to StdErr:
 
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/ce4e20bd-942b-4926-b913-79fd3aac66f9)
 
+
+---
 
 ### phpunit
 
@@ -66,6 +79,7 @@ $ npm install --save-dev @faker-js/faker
 $ composer require ratchet/pawl
 $ composer require cboden/ratchet; # from RatchetSymfony7
 
+todo: websocket router
 todo: symfony web security
 todo: symfony db users, authentication
 todo: react state (redux, mobx)
