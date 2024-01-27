@@ -2,123 +2,99 @@
 
 namespace App\Service;
 
+use App\Controller\LiveTradesControllerLive;
+use App\Controller\LiveTradesControllerLog;
 use Closure;
-use Exception;
-use Ratchet\ConnectionInterface;
 use Ratchet\Http\HttpServer;
-use Ratchet\MessageComponentInterface;
+use Ratchet\Http\Router;
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
-use SplObjectStorage;
+use React\EventLoop\Loop;
+use React\Socket\SocketServer;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Routing\Matcher\UrlMatcher;
+use Symfony\Component\Routing\RequestContext;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
 
-class LiveTradesServe implements MessageComponentInterface
+final class LiveTradesServe
 {
-    public SplObjectStorage $clients;
     private ?int $port = null;
-    private ?string $listen = null;
+    private ?string $address = null;
     private ?IoServer $server;
 
-    /** @var $writelnCb ?Closure(string $msg): void */
+    /** @var ?Closure(string $message): void */
     private ?Closure $writelnCb = null;
 
-    private bool $verbose = false;
-
-    private array $messages = [];
+    private $withRouter = true;
 
     public function __construct(
+        private readonly LiveTradesControllerLive $compLive,
+        private readonly LiveTradesControllerLog $compLog,
+        private readonly LiveTradesEvents $events,
         private readonly ParameterBagInterface $params,
     )
-    {
-        $this->clients = new SplObjectStorage;
-    }
+    {}
 
-    public function getServer(?int $port = null, ?string $listen = null): IoServer
+    /** @param $writeln ?Closure(string $message): void
+     * @noinspection PhpDocSignatureIsNotCompleteInspection */
+    public function init(int $port = 0, string $address = '',
+                            $verbose = false, ?Closure $writeln = null): void
     {
         $this->port = $port ?: $this->params->get('liveTradesPort');
-        $this->listen = $listen ?: $this->params->get('liveTradesListen');
+        $this->address = $address ?: $this->params->get('liveTradesListen');
+        $this->writelnCb = $writeln;
 
-        $ws = new WsServer($this);
-        $http = new HttpServer($ws);
-        $this->server = IoServer::factory($http, $this->port, $this->listen);
-        return $this->server;
+        if (!$this->withRouter) {
+            $this->compLive->init($verbose, $this->writelnCb);
+            $this->ioServer(new WsServer($this->compLive));
+            return;
+        }
+
+        // See: github.com/ratchetphp/Ratchet
+        // $app = new \Ratchet\App();
+        // $app->route($path, $ws, $allowedOrigins, $httpHost);
+        // $app->run();
+        $routes = new RouteCollection();
+        $matcher = new UrlMatcher($routes, new RequestContext());
+        $this->ioServer(new Router($matcher));
+
+        $httpHost = ''; //'localhost';
+        $requirements = ['Origin' => $httpHost ?: '*'];
+
+        $this->compLive->init($verbose, $this->writelnCb);
+        $ws = new WsServer($this->compLive);
+        //$ws->enableKeepAlive($this->server->loop);
+        $path = '/live';
+        $routes->add($path, new Route($path, ['_controller' => $ws], $requirements, [], $httpHost, [], ['GET']));
+
+        $this->compLog->init($verbose, $this->writelnCb, $this->events);
+        $ws = new WsServer($this->compLog);
+        //$ws->enableKeepAlive($this->server->loop);
+        $path = '/log';
+        $routes->add($path, new Route($path, ['_controller' => $ws], $requirements, [], $httpHost, [], ['GET']));
     }
 
-    /** $writeln ?Closure(string $msg): void
-     * @noinspection PhpDocSignatureIsNotCompleteInspection */
-    public function execute(?Closure $write = null, ?Closure $writeln = null, $verbose = false)
+    public function run(): void
     {
-        if (!$this->server) $this->getServer();
-
-        $this->writelnCb = $writeln;
-        $this->verbose = $verbose;
-        $this->writeln('[ws://' . $this->listen . ':' . $this->port . ' listening]');
+        $this->writeln('[ws://' . $this->address . ':' . $this->port . ' listening]');
         $this->server->run();
     }
 
-    private function writeln(string $msg = ''): void
+
+    //---
+
+    private function ioServer($http): void
     {
-        if ($this->writelnCb) ($this->writelnCb)($msg);
+        $app = new HttpServer($http);
+        //$this->server = IoServer::factory($app, $this->port, $this->address);
+        $loop = Loop::get();
+        $socket = new SocketServer($this->address . ':' . $this->port, loop: $loop);
+        $this->server = new IoServer($app, $socket, $loop);
     }
 
-    public function messageSave(string $message): int
+    private function writeln(string $message = ''): void
     {
-        $json = json_decode($message);
-        if (!is_array($json)) return 0;
-        if (is_array($json[1])) {
-            array_push($this->messages, ...$json[1]);
-            return count($json[1]);
-        } else if ($json[1] === 'te') {
-            array_shift($json);
-            array_shift($json);
-            $this->messages[] = $json;
-            return 1;
-        }
-        return 0;
-    }
-
-    public function messageSend(string $message, int $count): void
-    {
-        foreach ($this->clients as $client) {
-            if ($this->verbose || $count > 1)
-                $this->writeln('[' . $client->resourceId . '/' . count($this->clients) . ' <] '
-                    . ($count === 1 ? $message : $count . ' messages'));
-            $client->send($message);
-        }
-    }
-
-    public function messageSaveAndSend(string $message): bool
-    {
-        $count = $this->messageSave($message);
-        if ($count) $this->messageSend($message, $count);
-        return $count > 0;
-    }
-
-    function onOpen(ConnectionInterface $conn)
-    {
-        $this->clients->attach($conn);
-        $this->writeln('[' . $conn->resourceId . '@' . $conn->remoteAddress . '/' . count($this->clients) . ' open]');
-        $this->messageSend(json_encode([0, $this->messages]), count($this->messages));
-    }
-
-    function onClose(ConnectionInterface $conn)
-    {
-        $this->clients->detach($conn);
-        $this->writeln('[' . $conn->resourceId . '/' . count($this->clients) . ' close]');
-    }
-
-    function onError(ConnectionInterface $conn, Exception $e)
-    {
-        $this->writeln('[' . ($conn->resourceId ?: '') . '/' . count($this->clients) . ' error] ' . $e->getMessage());
-        //$this->writeln(print_r($e, true));
-        $conn->close();
-        $this->clients->detach($conn);
-    }
-
-    function onMessage(ConnectionInterface $from, $msg)
-    {
-        $this->writeln('[' . $from->resourceId . '/' . count($this->clients) . ' >] ' . $msg);
-        if ($this->verbose) $this->writeln('[' . $from->resourceId . '/' . count($this->clients) . ' <] ' . $msg);
-        $from->send($msg);
+        if ($this->writelnCb) ($this->writelnCb)($message);
     }
 }

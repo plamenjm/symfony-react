@@ -1,7 +1,7 @@
 import React from 'react';
 import {Config} from '/assets/Config';
-import {LV, TSChartTicks, TSEventsView, TSLogMessage, TSTradeMessage} from '/assets/react/modules/utilsLiveTrades';
 import {TSStateSetCB, Utils} from '/assets/Utils';
+import {LV, TSChartTicks, TSEventsView, TSLogMessage, TSTradeMessage} from '/assets/react/modules/utilsLiveTrades';
 
 
 //---
@@ -28,7 +28,7 @@ export function eventsAggregate(events: TSTradeMessage[], view: string) {
             : view === LV.EnumView.Week ? (7 / LV.ChartTicks.Week) * 24 * 60 * 60 * 1000 / tickDotsWeek
                 : 0
     return events.reduce((res, event) => {
-        const ev = res.length && {...res[res.length - 1]}
+        const ev = res.length && {...res.slice(-1)[0]}
         if (!ev || event.date - ev.date > delta)
             res.push(event as never)
         else {
@@ -45,7 +45,8 @@ export function eventsAggregate(events: TSTradeMessage[], view: string) {
 }
 
 export function processEvents(events: TSTradeMessage[],
-                              view: string, symbol: string, from: number, to: number,
+                              view: string, symbol: string, aggregate: boolean,
+                              from: number, to: number,
                               state?: TSEventsView): undefined | TSEventsView {
     const eventsSymbol = eventsFilterSymbol(events, symbol)
     if (!eventsSymbol.length) return
@@ -71,59 +72,94 @@ export function processEvents(events: TSTradeMessage[],
     //}
 
     return {min, max, avg, count,
-        data: Config.LiveTradesAggregateEvents ? eventsAggregate(eventsView, view) : eventsView}
+        data: aggregate ? eventsAggregate(eventsView, view) : eventsView}
 }
 
 
 //---
 
-export function useLiveTradesEvents(stateDate: Date, setDate: TSStateSetCB<Date>, stateView: string, stateSymbol: string, ticks: TSChartTicks) {
-    const [stateMessages, setMessages] = React.useState<TSLogMessage[]>([])
-    const [stateEvents, setEvents] = React.useState<TSEventsView>(LV.EventsInit)
-    const [statePending, setPending] = React.useState(0)
+export function getMessages(state: TSLogMessage[], allEvents: boolean) {
+    //const keepMessages = 1000 // test
+    return [
+        ...state.slice(0, keepMessages),
+        ...(!allEvents ? [{idx: -1, data: '...'}] : state.slice(keepMessages, -keepMessages).filter(msg => !('data' in msg))),
+        ...(state.length - keepMessages <= 0 ? [] : state.slice(-Math.min(keepMessages, state.length - keepMessages))),
+    ]
+}
 
-    const getMessages = (keepState?: TSLogMessage[]) => {
-        //const keepMessages = 1000 // test
-        const state = keepState ? keepState : stateMessages
-        return [
-            ...state.slice(0, keepMessages),
-            ...(!keepState ? [{idx: -1, data: '...'}] : state.slice(keepMessages, -keepMessages).filter(msg => !('data' in msg))),
-            ...(state.length - keepMessages <= 0 ? [] : state.slice(-Math.min(keepMessages, state.length - keepMessages))),
-        ]
+export function onMessageCB(setMessages: TSStateSetCB<TSLogMessage[]>) {
+    return (message: string | TSLogMessage, uniqId = false) => {
+        const msg = typeof message !== 'string' ? message : {data: Utils.dateTimeUTC() + ' ' + message}
+        setMessages(state => {
+            let old = getMessages(state, true)
+            if (uniqId) old = old.filter(m => !('id' in msg) || !('id' in m) || m.id !== msg.id || m.type !== msg.type)
+            return [{...msg, idx: 1 + (state[0]?.idx ?? 0)}, ...old]
+        })
     }
+}
 
-    function onMessage(message: string | TSLogMessage) {
-        const msg = typeof message === 'object' ? message : {data: Utils.dateTimeUTC() + ' ' + message}
-        setMessages(state => [{...msg, idx: 1 + (state[0]?.idx ?? 0)}, ...getMessages(state)])
-    }
+export function onEventCB(refCB: React.MutableRefObject<{
+    setDate: TSStateSetCB<Date>, stateEvents: TSEventsView, setEvents: TSStateSetCB<TSEventsView>, setCalc: TSStateSetCB<boolean>,
+                          }>, stateDate: Date, stateView: string, stateSymbol: string, stateAggregate: boolean,
+                          ticks: TSChartTicks, stateMessages: TSLogMessage[]) {
+    return (events?: TSTradeMessage[]) => {
+        refCB.current.setCalc(true) // overlap stateFetch and stateCalc (early stateCalc)
 
-    function onClear() {
-        setMessages([])
-        setEvents(LV.EventsInit)
-    }
-
-    function onEvent(events?: TSTradeMessage[]) {
         if (events && isSymbolType(stateSymbol, events[0].type)
-            && events[0].date > ticks[ticks.length - 1].value) {
-            const date = new Date()
-            if (LV.datePlusTick(date, stateView)) setDate(date)
+            && ticks[0].value <= stateDate.getTime() && events[0].date > ticks.slice(-1)[0].value) {
+            //refCB.current.setDate(new Date())
+            const date = new Date(stateDate)
+            if (LV.datePlusTick(date, stateView)) refCB.current.setDate(date)
         }
 
-        //setEvents(stateEvents => {
-            const newState = processEvents(events ? events
-                    : stateMessages.filter(msg => !('data' in msg)) as TSTradeMessage[],
-                stateView, stateSymbol, ticks[0].value, ticks[ticks.length - 1].value,
-                events ? stateEvents : undefined)
+        //refCB.current.setEvents(stateEvents => {
+        const newState = processEvents(
+            events ? events : stateMessages.filter(msg => !('data' in msg)) as TSTradeMessage[],
+            stateView, stateSymbol, stateAggregate,
+            ticks[0].value, ticks.slice(-1)[0].value,
+            events ? refCB.current.stateEvents : undefined)
         //    return newState ?? stateEvents
         //})
-        if (newState) setEvents(newState)
+        if (newState) refCB.current.setEvents(newState)
     }
+}
+
+
+//---
+
+export function useLiveTradesEvents(stateDate: Date, setDate: TSStateSetCB<Date>,
+                                    stateView: string, stateSymbol: string, stateAggregate: boolean,
+                                    ticks: TSChartTicks) {
+    const [stateMessages, setMessages] = React.useState<TSLogMessage[]>([])
+    const [stateEvents, setEvents] = React.useState<TSEventsView>(LV.EventsInit)
+    const [stateCalc, setCalc] = React.useState(false)
+    const [statePending, setPending] = React.useState(0)
+
+    const cbGetMessages = React.useCallback(getMessages, [])
+
+    const cbOnMessage = React.useCallback(onMessageCB(setMessages), [])
+
+    const cbOnClear = React.useCallback(() => {
+        setMessages([])
+        setEvents(LV.EventsInit)
+    }, [])
+
+    const refCBCurrent = {setDate, stateEvents, setEvents, setCalc}
+    const refCB = React.useRef(refCBCurrent)
+    refCB.current = refCBCurrent
+
+    const cbOnEvent = React.useCallback(onEventCB(refCB, stateDate, stateView, stateSymbol, stateAggregate, ticks, stateMessages),
+        [stateDate, stateView, stateSymbol, stateAggregate, ticks, stateMessages])
 
     React.useLayoutEffect(() => {
-        onEvent()
-    }, [statePending, stateView, stateSymbol, ticks])
+        cbOnEvent()
+    }, [statePending, stateView, stateSymbol, stateAggregate, ticks])
 
-    const onEvents = () => setPending(state => state + 1)
+    const cbOnEvents = React.useCallback(() => setPending(state => state + 1),
+        [])
 
-    return {stateMessages, setMessages, getMessages, onMessage, onClear, stateEvents, onEvent, onEvents}
+    return {
+        stateMessages, setMessages, getMessages: cbGetMessages, onMessage: cbOnMessage, onClear: cbOnClear,
+        stateEvents, onEvent: cbOnEvent, onEvents: cbOnEvents, stateCalc, setCalc,
+    }
 }

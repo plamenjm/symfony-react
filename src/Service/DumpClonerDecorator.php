@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\EventListener\DumpSubscriber;
+use App\Utils;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\VarDumper\Cloner\AbstractCloner;
@@ -29,9 +31,9 @@ class DumpClonerDecorator extends AbstractCloner
     {
         $cloned = $this->inner?->doClone($var);
 
-        if (self::dumpStdErrEnable) \App\Utils::stdErr($var); // to-do: if dump_destination is not php://stderr
+        if (self::dumpStdErrEnable) Utils::stdErr($var); // to-do: only when dump_destination is not php://stderr
 
-        if (self::dumpCollectEnable) \App\EventListener\DumpSubscriber::dumpCollect($var);
+        if (self::dumpCollectEnable) DumpSubscriber::dumpCollect($var);
 
         return $cloned;
     }

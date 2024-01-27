@@ -2,11 +2,15 @@
 
 namespace App\EventListener;
 
+use App\Constant;
+use App\Utils;
+use Closure;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\VarDumper\VarDumper;
 
 final class DumpSubscriber implements EventSubscriberInterface
 {
@@ -31,7 +35,7 @@ final class DumpSubscriber implements EventSubscriberInterface
         return $res;
     }
 
-    private \Closure $dumpHandlerPrev;
+    private Closure $dumpHandlerPrev;
     private static array $DUMP_COLLECT = []; // to-do: use EventDispatcher? use DumpDataCollector?
 
     public static function dumpCollect($var): void
@@ -55,8 +59,8 @@ final class DumpSubscriber implements EventSubscriberInterface
     {
         if ($this->kernel->isDebug()) {
             // after DumpListener // 1024 = \Symfony\Component\HttpKernel\EventListener\DumpListener::getSubscribedEvents()
-            if (self::dumpEnableStdErrAndCollect) $this->dumpHandlerPrev = \Symfony\Component\VarDumper\VarDumper::setHandler(function ($var, string $label = null) {
-                \App\Utils::stdErr($var); // to-do: if dump_destination is not php://stderr
+            if (self::dumpEnableStdErrAndCollect) $this->dumpHandlerPrev = VarDumper::setHandler(function ($var, string $label = null) {
+                Utils::stdErr($var); // to-do: only when dump_destination is not php://stderr
 
                 self::dumpCollect($var);
 
@@ -73,7 +77,7 @@ final class DumpSubscriber implements EventSubscriberInterface
                 $request = $event->getRequest();
                 if (!$request->isXmlHttpRequest()
                     //&& $request->query->has('profilerReplace')
-                    && str_starts_with($request->attributes->get('_route'), \App\Constant::APP_ROUTE_API))
+                    && str_starts_with($request->attributes->get('_route'), Constant::APP_ROUTE_API))
                     $event->getResponse()->headers->set('Symfony-Debug-Toolbar-Replace', '1');
             }
         }
@@ -91,7 +95,7 @@ final class DumpSubscriber implements EventSubscriberInterface
                     && str_contains($response->headers->get('Content-Type') ?? '', 'html')) {
                     $res = '';
                     for ($i = 0; $i < sizeof(self::$DUMP_COLLECT); $i++)
-                        $res .= \App\Utils::JSConsole(self::$DUMP_COLLECT[$i], false);
+                        $res .= Utils::JSConsole(self::$DUMP_COLLECT[$i], false);
                     $response->setContent($response->getContent() . $res);
                 }
             }

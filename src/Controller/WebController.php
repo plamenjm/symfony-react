@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Config;
+use App\Constant;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -85,14 +87,14 @@ class WebController extends BaseController //implements \Symfony\Contracts\Servi
         $route = $request->attributes->get('_route');
         $url = $this->generateUrl($route, [], UrlGeneratorInterface::ABSOLUTE_URL);
         $urlApi = implode('/', array_slice(explode('/', $url), 0, 3))
-            . rtrim(\App\Constant::APP_PATH_API, '/') . '/';
+            . rtrim(Constant::APP_PATH_API, '/') . '/';
 
         return $this->render('spa.html.twig', [
             //'route' => $route, //'path' => $this->generateUrl($route),
             'appJSConfig' => [
                 'FetchApi' => $urlApi,
-                'LiveTradesUrl' => \App\Config::LiveTradesUrl,
-                'LiveTradesSubscribe' => \App\Config::LiveTradesSubscribe,
+                'LiveTradesUrl' => Config::LiveTradesUrl,
+                'LiveTradesSubscribe' => Config::LiveTradesSubscribe,
             ],
         ]);
     }

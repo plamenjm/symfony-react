@@ -2,8 +2,11 @@ import React from 'react';
 import useWebSocket, {ReadyState} from 'react-use-websocket';
 import {Constant} from '/assets/Constant';
 import {Config, DevFaker} from '/assets/Config';
-import {TSStateSetCB, Utils} from '/assets/Utils';
+import {TSStateSetCB} from '/assets/Utils';
 import {LV, TSLogMessage, TSRawMessages, TSTradeMessage} from '/assets/react/modules/utilsLiveTrades';
+
+
+//---
 
 export function fakerGetEvents(startIdx: number = 0, days = 7, perDay = 24): TSTradeMessage[] {
     // events:
@@ -26,19 +29,24 @@ export function fakerGetEvents(startIdx: number = 0, days = 7, perDay = 24): TST
     })
 }
 
-export function useLiveTradesWebSocket(noMessages: boolean, setMessages: TSStateSetCB<TSLogMessage[]>,
-                                       onMessage: (msg: string | TSLogMessage) => void, onClear: () => void, onEvents: () => void) {
-    const [stateUrl, setUrl] = React.useState<null | string>(Config.LiveTradesAutoConnect ? Config.LiveTradesUrl : null)
+
+//---
+
+export function useLiveTradesLive(stateUrl: null | string, setUrl: TSStateSetCB<null | string>,
+                                  onWSMessage: (event: MessageEvent, uniqId?: boolean, live?: boolean) => void,
+                                  setMessages: TSStateSetCB<TSLogMessage[]>,
+                                  onMessage: (msg: string | TSLogMessage) => void, onClear: () => void,
+                                  isClear: boolean, onEvents: () => void) {
     const [stateCloseCode, setCloseCode] = React.useState(0)
     //const [stateStatus, setStatus] = React.useState(ReadyState.UNINSTANTIATED)
 
-    const memoRef = React.useRef({setCloseCode})
-    memoRef.current = {setCloseCode}
-    const memoOptions = React.useMemo(() => ({
-        onClose: (event: CloseEvent) => memoRef.current.setCloseCode(event.code),
-    }), [])
+    const cbOnClose = React.useCallback((event: CloseEvent) => setCloseCode(event.code),
+        [])
 
-    const {lastMessage, lastJsonMessage, readyState, sendMessage, getWebSocket} = useWebSocket<TSRawMessages>(stateUrl, memoOptions)
+    const options = React.useMemo(() => (
+        {onMessage: (event: MessageEvent) => onWSMessage(event, false, true), onClose: cbOnClose}
+    ), [])
+    const {readyState, sendMessage} = useWebSocket<TSRawMessages>(stateUrl,options)
 
     React.useLayoutEffect(() => {
         if (!stateCloseCode || stateCloseCode === 1000) return
@@ -68,22 +76,22 @@ export function useLiveTradesWebSocket(noMessages: boolean, setMessages: TSState
     }, [readyState])
 
     React.useLayoutEffect(() => {
-        if (!DevFaker || stateUrl || !noMessages) return
+        if (!DevFaker || stateUrl || !isClear) return
         setMessages(fakerGetEvents())
         onEvents()
-    }, [stateUrl, noMessages])
+    }, [stateUrl, isClear])
 
-    function onConnect() {
+    const onConnect = React.useCallback(() => {
         onClear()
         setUrl(Config.LiveTradesUrl)
-    }
+    }, [])
 
-    function onDisconnect() {
+    const onDisconnect = React.useCallback(() => {
         setUrl(null)
         setCloseCode(0)
-    }
+    }, [])
 
-    const reconnect = ![0, 1000].includes(stateCloseCode)
+    const isReconnect = ![0, 1000].includes(stateCloseCode)
 
-    return {stateUrl, onClear, onConnect, onDisconnect, reconnect, lastMessage, lastJsonMessage}
+    return {stateUrl, onClear, onConnect, onDisconnect, isReconnect}
 }

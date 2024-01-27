@@ -5,13 +5,15 @@ Playground - Symfony, SQLite, phpunit; WebSocket; React.js, Chart.js, TypeScript
 
 <details><summary>
 
-### Live Trades frontend - WebSocket client, live chart, back/forward hour/day/week
+### Live Trades frontend - SPA React.js, WebSocket client, live Chart.js
 
 </summary>
 
-![image](https://github.com/plamenjm/symfony-react/assets/56994434/28097db8-8d40-40df-909d-2aeda0996b68)
+get events by date/time, subscribe for real-time events (live), back/forward, hour/day/week, aggregation
 
-![image](https://github.com/plamenjm/symfony-react/assets/56994434/0bd6d60b-036d-45ec-a3c6-70ba4b160c57)
+![image](https://github.com/plamenjm/symfony-react/assets/56994434/a3d09dc2-0b29-44c9-bbba-69eeaac753c9)
+
+![image](https://github.com/plamenjm/symfony-react/assets/56994434/c0ac58c4-bcda-4a0c-abd1-08f0fe927a52)
 
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/48977f05-04c4-4526-b3a8-47174bfc4a25)
 
@@ -21,9 +23,14 @@ Playground - Symfony, SQLite, phpunit; WebSocket; React.js, Chart.js, TypeScript
 
 <details><summary>
 
-### Live Trades backend - WebSocket client and server
+### Live Trades backend - PHP/Ratchet WebSocket client and server
 
 </summary>
+
+```
+$ bin/console liveTrades:client
+$ bin/console liveTrades:serve
+```
 
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/718e3445-ce5a-4644-b7d8-aade9264b318)
 
@@ -94,6 +101,7 @@ $ npm install react-chartjs-2
 $ npm install --save-dev @faker-js/faker
 $ composer require ratchet/pawl
 $ composer require cboden/ratchet; # from RatchetSymfony7
+$ composer require symfony/event-dispatcher
 
 todo: websocket router
 todo: symfony web security

@@ -25,7 +25,7 @@ class Kernel extends BaseKernel
 
         if ($this->container->getParameter('kernel.debug')) {
             if (self::dumpEnableStdErrAndCollect) $this->dumpHandlerPrev = \Symfony\Component\VarDumper\VarDumper::setHandler(function ($var, string $label = null) {
-                \App\Utils::stdErr($var); // to-do: if dump_destination is not php://stderr
+                \App\Utils::stdErr($var); // to-do: only when dump_destination is not php://stderr
 
                 \App\EventListener\DumpSubscriber::dumpCollect($var);
 

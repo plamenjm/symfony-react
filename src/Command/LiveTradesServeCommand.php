@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Config;
 use App\Service\LiveTradesClient;
 use App\Service\LiveTradesServe;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -15,15 +16,12 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
     name: 'liveTrades:serve',
     description: 'Live trades WebSocket server. See command "liveTrades:client"',
 )]
-class LiveTradesServeCommand extends Command
+final class LiveTradesServeCommand extends LiveTradesCommandBase
 {
-    private ?OutputInterface $output = null;
-    private bool $needsLn = false;
-
     public function __construct(
-        private readonly ParameterBagInterface $params,
-        private readonly LiveTradesServe $liveTradesServe,
         private readonly LiveTradesClient $liveTradesClient,
+        private readonly LiveTradesServe $liveTradesServe,
+        private readonly ParameterBagInterface $params,
     )
     {
         parent::__construct();
@@ -32,6 +30,8 @@ class LiveTradesServeCommand extends Command
     protected function configure(): void
     {
         $this
+            ->addArgument('url', InputArgument::OPTIONAL, '', Config::LiveTradesUrl)
+            //->addArgument('subscribe', InputArgument::OPTIONAL, '', Config::LiveTradesSubscribe)
             ->addArgument('port', InputArgument::OPTIONAL, '', $this->params->get('liveTradesPort'),
                 [8002, 80])
             ->addArgument('listen', InputArgument::OPTIONAL, '', $this->params->get('liveTradesListen'),
@@ -39,32 +39,19 @@ class LiveTradesServeCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->output = $output;
+        parent::execute($input, $output);
+        $url = $input->getArgument('url');
+        $subscribe = Config::LiveTradesSubscribe;
+        $this->liveTradesClient->init($url, $subscribe, $this->output->isVerbose(), $this->write(...), $this->writeln(...));
 
-        $server = $this->liveTradesServe->getServer($input->getArgument('port'), $input->getArgument('listen'));
+        $port = $input->getArgument('port');
+        $address = $input->getArgument('listen');
+        $this->liveTradesServe->init($port, $address, $this->output->isVeryVerbose(), $this->writeln(...));
 
-        $this->liveTradesClient->execute($this->write(...), $this->writeln(...),
-            $this->liveTradesServe->messageSaveAndSend(...), $server->loop,
-            $output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE);
-        $this->liveTradesServe->execute($this->write(...), $this->writeln(...),
-            $output->getVerbosity() > OutputInterface::VERBOSITY_VERBOSE);
-
+        $this->liveTradesClient->run();
+        $this->liveTradesServe->run();
         return Command::SUCCESS;
-    }
-
-    private function write(string $line, bool $prefix): void
-    {
-        $this->output->write((!$prefix ? '' : \App\Utils::dateTimeUTC() . ' ') . $line);
-        $this->needsLn = true;
-    }
-
-    private function writeln(string $line): void
-    {
-        if ($this->needsLn) $this->output->writeln('');
-        if (!$line) $this->output->writeln('');
-        else $this->output->writeln(\App\Utils::dateTimeUTC() . ' ' . $line);
-        $this->needsLn = false;
     }
 }

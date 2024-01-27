@@ -1,5 +1,7 @@
 <?php
 
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+
 
 //---
 
@@ -23,7 +25,7 @@ $container->setParameter('liveTradesListen', '10.0.2.100'); // docker
 
 $container->setAlias(\Symfony\Component\HttpKernel\Profiler\Profiler::class, 'profiler');
 
-return function(\Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator $container): void {
+return function(ContainerConfigurator $container): void {
     $dumpTwigTagEnable = false; // phpunit twig {% dump %} tag // to-do: debug.var_dumper.cloner?
 
     if ($container->env() === 'test') {

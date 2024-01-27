@@ -2,6 +2,12 @@
 
 namespace App;
 
+use DateTime;
+use DateTimeZone;
+use Symfony\Component\VarDumper\Cloner\VarCloner;
+use Symfony\Component\VarDumper\Dumper\AbstractDumper;
+use Symfony\Component\VarDumper\Dumper\CliDumper;
+
 class Utils
 {
     private static function env(string|object $src = null): string
@@ -31,16 +37,16 @@ class Utils
 
     //---
 
-    public static function dateTimeUTC(null | int | string | \DateTime $date = null): string {
+    public static function dateTimeUTC(null | int | string | DateTime $date = null): string {
         if (!$date)
-            $date = new \DateTime();
+            $date = new DateTime();
         else if (is_int($date))
-            $date = (new \DateTime())->setTimestamp($date);
-        else if (!($date instanceof \DateTime))
-            $date = new \DateTime($date);
+            $date = (new DateTime())->setTimestamp($date);
+        else if (!($date instanceof DateTime))
+            $date = new DateTime($date);
 
         return $date
-            ->setTimezone(new \DateTimeZone('UTC'))
+            ->setTimezone(new DateTimeZone('UTC'))
             ->format('Y-m-d H:i:s');
     }
 
@@ -62,9 +68,9 @@ class Utils
         }
 
         //if (self::UseVarDumper) {
-        //    $dumper = new \Symfony\Component\VarDumper\Dumper\CliDumper('php://stderr', null,
-        //        \Symfony\Component\VarDumper\Dumper\AbstractDumper::DUMP_STRING_LENGTH);
-        //    $var = $dumper->dump((new \Symfony\Component\VarDumper\Cloner\VarCloner())->cloneVar($var), true);
+        //    $dumper = new CliDumper('php://stderr', null,
+        //        AbstractDumper::DUMP_STRING_LENGTH);
+        //    $var = $dumper->dump((new VarCloner())->cloneVar($var), true);
         //}
 
         //$context = [__METHOD__ ?? __FUNCTION__ . ' @ ' . __FILE__, __LINE__, __TRAIT__ ?: '-']; //__CLASS__, __NAMESPACE__,
@@ -95,9 +101,9 @@ class Utils
     private const dumpStdErrUseCliDumper = true; // CliDumper or print_r
 
     public static function stdErrDump(mixed $var): void {
-        $dumper = new \Symfony\Component\VarDumper\Dumper\CliDumper('php://stderr', null,
-            \Symfony\Component\VarDumper\Dumper\AbstractDumper::DUMP_STRING_LENGTH);
-        $dumper->dump((new \Symfony\Component\VarDumper\Cloner\VarCloner())->cloneVar($var));
+        $dumper = new CliDumper('php://stderr', null,
+            AbstractDumper::DUMP_STRING_LENGTH);
+        $dumper->dump((new VarCloner())->cloneVar($var));
     }
 
     public static function stdErrPrint(mixed $var): void {
@@ -109,8 +115,8 @@ class Utils
     public static function stdErr(mixed $var): void // StdErr: symfony server:log; phpunit
     {
         if (self::dumpStdErrUseCliDumper)
-            \App\Utils::stdErrDump($var);
+            Utils::stdErrDump($var);
         else
-            \App\Utils::stdErrPrint($var);
+            Utils::stdErrPrint($var);
     }
 }

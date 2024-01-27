@@ -9,5 +9,5 @@ class Config
         '{"event": "subscribe", "channel": "trades", "pair": "BTCUSD"}',
         '{"event": "subscribe", "channel": "trades", "pair": "BTCEUR"}',
     ];
-
+    public const LiveTradesSymbol = ['BTCUSD', 'BTCEUR'];
 }

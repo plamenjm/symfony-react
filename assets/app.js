@@ -29,7 +29,7 @@ import { Config, setConfig } from './Config';
 
     const fetchApi = Config.FetchApi.startsWith('http') || cfg.FetchApi
     Object.keys(cfg).forEach(key => Config[key]
-      && (!Array.isArray(Config[key]) || !Config[key].length)
+      && (!Array.isArray(Config[key]) || Config[key].length)
       && delete cfg[key])
     if (!fetchApi) cfg.FetchApi = window.location.origin + Config.FetchApi // backup
     setConfig(cfg)

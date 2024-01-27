@@ -8,8 +8,8 @@ import {Jsx} from '/assets/react/Jsx';
 import {LV} from '/assets/react/modules/utilsLiveTrades';
 import {useLiveTrades} from '/assets/react/modules/hookLiveTrades';
 import {useLiveTradesEvents} from '/assets/react/modules/hookLiveTradesEvents';
-import {useLiveTradesWebSocket} from '/assets/react/modules/hookLiveTradesWebSocket';
-import {useLiveTradesMessages} from '/assets/react/modules/hookLiveTradesMessages';
+import {useLiveTradesLive} from '/assets/react/modules/hookLiveTradesLive';
+import {useLiveTradesLog} from '/assets/react/modules/hookLiveTradesLog';
 import {useLiveTradesChart} from '/assets/react/modules/hookLiveTradesChart';
 import '/assets/react/Page.css';
 
@@ -19,7 +19,7 @@ const MemoChartLine = React.memo(
         ref = ref as React.RefObject<ChartJSOrUndefined<'line'>>
         if (Config.DevLogEnable) {
             const refRender = useRef(0)
-            Utils.log('render', ++refRender.current, props.data.datasets[0].data.length) //ref.current?.data.datasets?.[0].data.length
+            Utils.log('Render Chart', ++refRender.current, props.data.datasets[0].data.length) //ref.current?.data.datasets?.[0].data.length
         }
 
         return <ChartLine ref={ref} options={props.options} data={props.data}/>
@@ -27,28 +27,37 @@ const MemoChartLine = React.memo(
 ))
 
 export function PageLiveTrades() {
-    const {stateDate, setDate, onPrev, onNext, stateView, radioView, stateSymbol, radioSymbol, stateAxis, radioAxis, ticks}
+    const {stateDate, setDate, onPrev, onNext, stateView, radioView, stateSymbol, radioSymbol, stateAxis, radioAxis, stateAggregate, check, ticks}
         = useLiveTrades()
-    const {stateMessages, setMessages, getMessages, onMessage, onClear, stateEvents, onEvent, onEvents}
-        = useLiveTradesEvents(stateDate, setDate, stateView, stateSymbol, ticks)
-    const {stateUrl, onConnect, onDisconnect, reconnect, lastMessage, lastJsonMessage}
-        = useLiveTradesWebSocket(stateMessages.length === 0, setMessages, onMessage, onClear, onEvents)
-    useLiveTradesMessages(lastMessage, lastJsonMessage, setMessages, onMessage, onEvent, onEvents)
+    const {stateMessages, setMessages, getMessages, onMessage, onClear, stateEvents, onEvent, onEvents, stateCalc, setCalc}
+        = useLiveTradesEvents(stateDate, setDate, stateView, stateSymbol, stateAggregate, ticks)
+
+    const {stateUrl, setUrl, onWSMessage, stateFetch} =
+        useLiveTradesLog(stateDate, stateView, stateSymbol, ticks, setMessages, onMessage, onClear, onEvent, onEvents)
+    const {onConnect, onDisconnect, isReconnect} =
+        useLiveTradesLive(stateUrl, setUrl, onWSMessage, setMessages, onMessage, onClear, stateMessages.length === 0, onEvents)
+
     const {refChart, options, data}
-        = useLiveTradesChart(stateEvents, stateDate, stateView, stateSymbol, stateAxis, ticks)
+        = useLiveTradesChart(stateDate, stateView, stateSymbol, stateAxis, ticks, stateEvents, setCalc)
 
     if (Config.DevLogEnable) {
         const refRender = useRef(0)
-        Utils.log('render', ++refRender.current, stateEvents.data.length, stateMessages.length)
+        Utils.log('Render Page', ++refRender.current, stateEvents.data.length, stateMessages.length)
     }
+    if (Config.DevLogEnable) React.useLayoutEffect(() => {
+        console.log(stateFetch, stateCalc, stateFetch || stateCalc)
+    }, [stateFetch, stateCalc])
+
+    const loading = stateFetch || stateCalc
+    const reconnect = !stateUrl && !isReconnect
 
     return (
         <div className='pageContent'>
             <div style={{display: 'flex'}}>
                 <div>
-                    <button disabled={!!stateUrl || reconnect} onClick={onConnect}>Connect</button>
+                    <button disabled={loading || !reconnect} onClick={onConnect}>Connect</button>
                     <br/>
-                    <button disabled={!stateUrl && !reconnect} onClick={onDisconnect}>Disconnect</button>
+                    <button disabled={loading || reconnect} onClick={onDisconnect}>Disconnect</button>
                     <br/>
                     <button onClick={onClear}>Clear</button>
                     {/*<br/>
@@ -56,29 +65,39 @@ export function PageLiveTrades() {
                 </div>
                 &nbsp;&nbsp;
                 <div>
-                    <button onClick={onPrev}>{'<'}</button>
+                    <button disabled={loading} onClick={onPrev}>{'<'}</button>
                     <br/>
-                    <button onClick={onNext}>{'>'}</button>
+                    <button disabled={loading} onClick={onNext}>{'>'}</button>
                 </div>
                 &nbsp;&nbsp;
                 <div>
-                    <label {...Jsx.radioLbl(...LV.RBViewHour)}>Hour view</label><input {...radioView(LV.EnumView.Hour)}/>
+                    <input disabled={loading} {...radioView(LV.EnumView.Hour)}/>
+                    <label {...Jsx.radioLbl(...LV.RBViewHour)}>Hour view</label>
                     <br/>
-                    <label {...Jsx.radioLbl(...LV.RBViewDay)}>Day view</label><input {...radioView(LV.EnumView.Day)}/>
+                    <input disabled={loading} {...radioView(LV.EnumView.Day)}/>
+                    <label {...Jsx.radioLbl(...LV.RBViewDay)}>Day view</label>
                     <br/>
-                    <label {...Jsx.radioLbl(...LV.RBViewWeek)}>Week view</label><input {...radioView(LV.EnumView.Week)}/>
+                    <input disabled={loading} {...radioView(LV.EnumView.Week)}/>
+                    <label {...Jsx.radioLbl(...LV.RBViewWeek)}>Week view</label>
                 </div>
                 &nbsp;&nbsp;
                 <div>
-                    <label {...Jsx.radioLbl(...LV.RBSymbolUSD)}>USD</label><input {...radioSymbol(LV.EnumSymbol.USD)}/>
+                    <input disabled={loading} {...radioSymbol(LV.EnumSymbol.USD)}/>
+                    <label {...Jsx.radioLbl(...LV.RBSymbolUSD)}>USD</label>
                     <br/>
-                    <label {...Jsx.radioLbl(...LV.RBSymbolEUR)}>EUR</label><input {...radioSymbol(LV.EnumSymbol.EUR)}/>
+                    <input disabled={loading} {...radioSymbol(LV.EnumSymbol.EUR)}/>
+                    <label {...Jsx.radioLbl(...LV.RBSymbolEUR)}>EUR</label>
                 </div>
                 &nbsp;&nbsp;
                 <div>
-                    <label {...Jsx.radioLbl(...LV.RBAxisLine)}>Linear</label><input {...radioAxis(LV.EnumAxis.Line)}/>
+                    <input {...radioAxis(LV.EnumAxis.Line)}/>
+                    <label {...Jsx.radioLbl(...LV.RBAxisLine)}>Linear</label>
                     <br/>
-                    <label {...Jsx.radioLbl(...LV.RBAxisLog)}>Logarithmic</label><input {...radioAxis(LV.EnumAxis.Log)}/>
+                    <input {...radioAxis(LV.EnumAxis.Log)}/>
+                    <label {...Jsx.radioLbl(...LV.RBAxisLog)}>Logarithmic</label>
+                    <br/>
+                    <input disabled={loading} {...check('agg', stateAggregate)}/>
+                    <label htmlFor='agg'>Aggregate</label>
                 </div>
                 &nbsp;&nbsp;
                 <div>
@@ -102,7 +121,7 @@ export function PageLiveTrades() {
             <MemoChartLine ref={refChart} options={options} data={data}/>
 
             <pre>
-                {getMessages().map(msg => <React.Fragment key={msg.idx}>
+                {getMessages(stateMessages, false).map(msg => <React.Fragment key={msg.idx}>
                     {'data' in msg ? msg.data : JSON.stringify({...msg, date: Utils.dateTimeUTC(msg.date)})}
                     <br/>
                 </React.Fragment>)}

@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Config;
 use App\Service\LiveTradesClient;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -13,13 +14,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: 'liveTrades:client',
-    description: 'Live trades WebSocket client. Subscribe for messages from "' . \App\Config::LiveTradesUrl . '".' . PHP_EOL
-    . '  Check the connection: $ npm exec wscat -- -P -c \'' . \App\Config::LiveTradesUrl . '\' -w 10 -x \'' . \App\Config::LiveTradesSubscribe[0] . '\'',
+    description: 'Live trades WebSocket client. Subscribe for messages from "' . Config::LiveTradesUrl . '".' . PHP_EOL
+    . '  Check the connection: $ npm exec wscat -- -P -c \'' . Config::LiveTradesUrl . '\' -w 10 -x \'' . Config::LiveTradesSubscribe[0] . '\'',
 )]
-class LiveTradesClientCommand extends Command
+final class LiveTradesClientCommand extends LiveTradesCommandBase
 {
     public function __construct(
-        private readonly LiveTradesClient $liveTradesClient,
+        private readonly ?LiveTradesClient $liveTradesClient,
     )
     {
         parent::__construct();
@@ -33,7 +34,7 @@ class LiveTradesClientCommand extends Command
         //;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         //$io = new SymfonyStyle($input, $output);
         //$argument = $input->getArgument('argument');
@@ -49,8 +50,12 @@ class LiveTradesClientCommand extends Command
         //}
         //$io->success('You have a new command! Now make it your own! Pass --help to see your options.');
 
+        parent::execute($input, $output);
+        $url = $input->getArgument('url');
+        $subscribe = Config::LiveTradesSubscribe;
 
-        $this->liveTradesClient->execute($output);
+        $this->liveTradesClient->init($url, $subscribe, $this->output->isVerbose(), $this->write(...), $this->writeln(...));
+        $this->liveTradesClient->run();
         return Command::SUCCESS;
     }
 }

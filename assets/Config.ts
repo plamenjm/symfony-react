@@ -16,14 +16,13 @@ export let Config = Object.freeze({
 
     //---
 
-    LiveTradesUrl: 'ws://localhost:8002',
-    //LiveTradesSubscribe: [
-    //    '{"event": "subscribe", "channel": "trades", "pair": "BTCUSD"}',
-    //    '{"event": "subscribe", "channel": "trades", "pair": "BTCEUR"}',
-    //],
-
-    //LiveTradesUrl: '', //'wss://api.bitfinex.com/ws/1', // appJSConfig from PHP controller. See: Config.php, WebController.php
-    LiveTradesSubscribe: [''], // appJSConfig from PHP controller. See: Config.php, WebController.php
+    LiveTradesLogUrl: 'ws://localhost:8002/log',
+    LiveTradesUrl: 'ws://localhost:8002/live',
+    //LiveTradesUrl: 'wss://api.bitfinex.com/ws/1',
+    LiveTradesSubscribe: [ // appJSConfig from PHP controller. See: Config.php, WebController.php
+        //'{"event": "subscribe", "channel": "trades", "pair": "BTCUSD"}',
+        //'{"event": "subscribe", "channel": "trades", "pair": "BTCEUR"}',
+    ],
 
     LiveTradesAutoConnect: false,
     LiveTradesKeepMessages: 10,

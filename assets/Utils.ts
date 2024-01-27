@@ -1,9 +1,9 @@
-import {SetStateAction} from 'react';
+import React, {SetStateAction} from 'react';
 
 
 //--- Types
 
-export type TSStateSetCB<S> = (state: SetStateAction<S>) => void
+export type TSStateSetCB<S> = React.Dispatch<React.SetStateAction<S>> //(state: SetStateAction<S>) => void
 
 
 //---

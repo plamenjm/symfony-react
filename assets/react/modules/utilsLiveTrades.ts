@@ -55,17 +55,17 @@ export const LV = Object.freeze({
     chartTooltip: function(date: Date, view: string): string {
         const label = date.toISOString()                                // 2024-01-15T07:44:22.301Z
         return label.split('T').join(' ').slice(0, 19)         // 2024-01-15 07:44:22
-        //return view === LV.EnumView.Hour ? label.slice(11, 19)          // 07:44:22
-        //    : view === LV.EnumView.Day ? (+label.slice(11, 16))         // 07:44
-        //        : view === LV.EnumView.Week ? label.slice(0, 10)        // 2025-01-15
-        //            : ''
+        //if (view === LV.EnumView.Hour) return label.slice(11, 19)       // 07:44:22
+        //if (view === LV.EnumView.Day) return +label.slice(11, 16)       // 07:44
+        //if (view === LV.EnumView.Week) return label.slice(0, 10)        // 2025-01-15
+        //return ''
     },
 
     chartTickLabel: function(date: Date, view: string): string {
         const label = date.toISOString()                                // 2024-01-15T07:44:22.301Z
-        return view === LV.EnumView.Hour ? label.slice(11, 16)          // 07:44
-            : view === LV.EnumView.Day ? (+label.slice(11, 13)) + 'h'   // 07h
-                : view === LV.EnumView.Week ? label.slice(5, 10)        // 01-15
-                    : ''
+        if (view === LV.EnumView.Hour) return label.slice(11, 16)       // 07:44
+        if (view === LV.EnumView.Day) return +label.slice(11, 13) + 'h' // 07h
+        if (view === LV.EnumView.Week) return label.slice(5, 10)        // 01-15
+        return ''
     },
 })
