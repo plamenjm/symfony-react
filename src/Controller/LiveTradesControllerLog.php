@@ -2,20 +2,17 @@
 
 namespace App\Controller;
 
-use App\Service\LiveTradesEvents;
-use Closure;
+use App\Classes\LiveTradesControllerBase;
+use App\Service\LiveTradesStore;
 use Ratchet\ConnectionInterface;
 
 final class LiveTradesControllerLog extends LiveTradesControllerBase
 {
-    private LiveTradesEvents $events;
-
-    /** @param $writelnCb Closure(string $message): void
-     * @noinspection PhpDocSignatureIsNotCompleteInspection */
-    public function init(bool $verbose, Closure $writelnCb, LiveTradesEvents $events = null)
+    public function __construct(
+        private readonly LiveTradesStore $liveTradesStore,
+    )
     {
-        parent::init($verbose, $writelnCb);
-        $this->events = $events;
+        parent::__construct();
     }
 
 
@@ -32,14 +29,12 @@ final class LiveTradesControllerLog extends LiveTradesControllerBase
 
         $json = json_decode($msg);
         if ($json->event === 'log' && $json->channel === 'trades') { // {"event": "log", "channel": "trades", "pair": "BTCUSD", "from": 1705081553, "to": 1705081553}
-            if (isset($this->events->trades[$json->pair])) {
-                $eventsAll = $this->events->trades[$json->pair]; // [ 'BTCUSD' => [ '1494734166-tBTCUSD', 1705081553, 43535, 0.0156206 ] ]
+            if (isset($this->liveTradesStore->trades[$json->pair])) {
+                $eventsAll = $this->liveTradesStore->trades[$json->pair]; // [ 'BTCUSD' => [ '1494734166-tBTCUSD', 1705081553, 43535, 0.0156206 ] ]
                 $events = array_filter($eventsAll, fn($event) => $json->from <= $event[1] && $event[1] < $json->to);
                 if (count($events)) {
-                    //$clients = new SplObjectStorage();
-                    //$clients->attach($from);
-                    //$this->messageSend(json_encode([0, array_values($events)]), count($events), $clients);
-                    $this->writeln(count($events) . ' messages', '<', $from);
+                    $log = count($events) . ' messages (' . $json->pair . ', ' . gmdate('Y-m-d H:i:s', $json->from) . '/' . gmdate('Y-m-d H:i:s', $json->to) . ')';
+                    $this->writeln($log, '<', $from);
                     $from->send(json_encode([0, array_values($events)]));
                     return;
                 }

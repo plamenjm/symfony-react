@@ -19,35 +19,45 @@ use Symfony\Component\Routing\RouteCollection;
 
 final class LiveTradesServe
 {
-    private ?int $port = null;
-    private ?string $address = null;
+    private bool $routeLive = true;
+    private bool $routeLog = true;
     private ?IoServer $server;
 
-    /** @var ?Closure(string $message): void */
-    private ?Closure $writelnCb = null;
-
-    private $withRouter = true;
-
+    /** @param $writelnCb ?Closure(string $message): void
+     * @noinspection PhpDocSignatureIsNotCompleteInspection */
     public function __construct(
-        private readonly LiveTradesControllerLive $compLive,
-        private readonly LiveTradesControllerLog $compLog,
-        private readonly LiveTradesEvents $events,
         private readonly ParameterBagInterface $params,
+        private readonly LiveTradesControllerLive $controllerLive,
+        private readonly LiveTradesControllerLog $controllerLog,
+        LiveTradesStore $liveTradesStore,
+        private ?int $port = null,
+        private ?string $address = null,
+        private ?Closure $writelnCb = null,
     )
-    {}
+    {
+        $liveTradesStore->init(true);
+    }
 
     /** @param $writeln ?Closure(string $message): void
      * @noinspection PhpDocSignatureIsNotCompleteInspection */
-    public function init(int $port = 0, string $address = '',
-                            $verbose = false, ?Closure $writeln = null): void
+    public function init(
+        int $port = 0,
+        string $address = '',
+        $verbose = false,
+        ?Closure $writeln = null,
+    ): void
     {
         $this->port = $port ?: $this->params->get('liveTradesPort');
         $this->address = $address ?: $this->params->get('liveTradesListen');
         $this->writelnCb = $writeln;
 
-        if (!$this->withRouter) {
-            $this->compLive->init($verbose, $this->writelnCb);
-            $this->ioServer(new WsServer($this->compLive));
+        if ($this->routeLive && !$this->routeLog) {
+            $this->controllerLive->init('live/', $verbose, $this->writelnCb);
+            $this->ioServer(new WsServer($this->controllerLive));
+            return;
+        } else if (!$this->routeLive && $this->routeLog) {
+            $this->controllerLog->init('log/', $verbose, $this->writelnCb);
+            $this->ioServer(new WsServer($this->controllerLog));
             return;
         }
 
@@ -62,14 +72,14 @@ final class LiveTradesServe
         $httpHost = ''; //'localhost';
         $requirements = ['Origin' => $httpHost ?: '*'];
 
-        $this->compLive->init($verbose, $this->writelnCb);
-        $ws = new WsServer($this->compLive);
+        $this->controllerLive->init('live/', $verbose, $this->writelnCb);
+        $ws = new WsServer($this->controllerLive);
         //$ws->enableKeepAlive($this->server->loop);
         $path = '/live';
         $routes->add($path, new Route($path, ['_controller' => $ws], $requirements, [], $httpHost, [], ['GET']));
 
-        $this->compLog->init($verbose, $this->writelnCb, $this->events);
-        $ws = new WsServer($this->compLog);
+        $this->controllerLog->init('log/', $verbose, $this->writelnCb);
+        $ws = new WsServer($this->controllerLog);
         //$ws->enableKeepAlive($this->server->loop);
         $path = '/log';
         $routes->add($path, new Route($path, ['_controller' => $ws], $requirements, [], $httpHost, [], ['GET']));

@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Controller;
+namespace App\Classes;
 
-use App\Config;
 use Closure;
 use Exception;
 //use GuzzleHttp\Psr7\Request;
@@ -10,28 +9,30 @@ use Ratchet\ConnectionInterface;
 use Ratchet\MessageComponentInterface;
 use SplObjectStorage;
 
+//#[\Symfony\Component\DependencyInjection\Attribute\Exclude]
 abstract class LiveTradesControllerBase implements MessageComponentInterface
 {
-    protected SplObjectStorage $clients;
+    private SplObjectStorage $clients;
+    protected string $route = '';
+    protected bool $verbose = false;
 
-    protected bool $verbose;
+    /** @var ?Closure(string $message): void */
+    private ?Closure $writelnCb = null;
 
-    /** @var Closure(string $message): void */
-    private Closure $writelnCb;
-
-    /** @param $subscribed SplObjectStorage[] */
-    public function __construct(
-        protected array $subscribed = [],
-    )
+    public function __construct()
     {
         $this->clients = new SplObjectStorage;
-        foreach (Config::LiveTradesSymbol as $symbol) $this->subscribed[$symbol] = new SplObjectStorage;
     }
 
-    /** @param $writelnCb Closure(string $message): void
+    /** @param $writelnCb ?Closure(string $message): void
      * @noinspection PhpDocSignatureIsNotCompleteInspection */
-    public function init(bool $verbose, Closure $writelnCb)
+    public function init(
+        string $route = '',
+        bool $verbose = false,
+        ?Closure $writelnCb = null,
+    )
     {
+        $this->route = $route;
         $this->verbose = $verbose;
         $this->writelnCb = $writelnCb;
     }
@@ -48,7 +49,7 @@ abstract class LiveTradesControllerBase implements MessageComponentInterface
         $addr = $sub && $conn && $withAddr ? '@' . $this->remoteAddress($conn) : '';
         if (!$sub) $pref = '';
         else if (!$conn) $pref = '[' . $sub . ']';
-        else $pref = '[' . ($this->resourceId($conn) ?: '') . $addr . '/' . count($this->clients) . $sub . ']';
+        else $pref = '[' . $this->route . ($this->resourceId($conn) ?: '') . $addr . '/' . count($this->clients) . $sub . ']';
 
         $msg = $message ? ' ' . $message : '';
 
@@ -82,17 +83,6 @@ abstract class LiveTradesControllerBase implements MessageComponentInterface
     //    parse_str($uri->getQuery(), $query);
     //    return $query;
     //}
-
-    protected function messageSend(string $message, int $count, SplObjectStorage $clients = null): void
-    {
-        if (!$clients) $clients = $this->clients;
-        if (!$count || !$clients->count()) return;
-        foreach ($clients as $client) {
-            if ($this->verbose || $count > 1)
-                $this->writeln($count === 1 ? $message : $count . ' messages', '<', $client);
-            $client->send($message);
-        }
-    }
 
     function onOpen(ConnectionInterface $conn)
     {

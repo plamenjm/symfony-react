@@ -10,4 +10,5 @@ class Config
         '{"event": "subscribe", "channel": "trades", "pair": "BTCEUR"}',
     ];
     public const LiveTradesSymbol = ['BTCUSD', 'BTCEUR'];
+    public const LiveTradesTransport = 'liveTrades'; // Sync: messenger.yaml, Config::LiveTradesTransport
 }

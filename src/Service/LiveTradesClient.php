@@ -3,7 +3,8 @@
 namespace App\Service;
 
 use App\Config;
-use App\EventListener\LiveEventsMessageEvent;
+use App\Modules\LiveTrades\LiveTradesEvent;
+use App\Modules\LiveTrades\LiveTradesMessage;
 use Closure;
 use Exception;
 use Ratchet\Client\Connector;
@@ -12,32 +13,37 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
 use Throwable;
 
 final class LiveTradesClient
 {
     private LoopInterface $loop;
-    private string $url = '';
-
-    /** @var string[] */
-    private array $subscribe = [];
-
-    private bool $verbose = true;
-
-    /** @var ?Closure(string $message, bool $prefix): void */
-    private ?Closure $writeCb = null;
-
-    /** @var ?Closure(string $message): void */
-    private ?Closure $writelnCb = null;
-
     private int $messageCount = 0;
     private int $tradesSave = 0;
 
+    /** @param $subscribe string[]
+     * @param $writeCb ?Closure(string $message, bool $prefix): void
+     * @param $writelnCb ?Closure(string $message): void
+     * @noinspection PhpDocSignatureIsNotCompleteInspection */
     public function __construct(
-        private readonly EventDispatcherInterface $dispatcher,
+        private readonly MessageBusInterface $messageBus,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private bool $withMessenger = false,
+        private string $url = '',
+        private array $subscribe = [],
+        private bool $verbose = true,
+        private ?Closure $writeCb = null,
+        private ?Closure $writelnCb = null,
     )
     {
         $this->loop = Loop::get();
+    }
+
+    public function dispatchEmptyMessage(): void
+    {
+        $this->messageBus->dispatch(new LiveTradesMessage([]), [new TransportNamesStamp(Config::LiveTradesTransport)]);
     }
 
     /** @param $subscribe string[]
@@ -45,6 +51,7 @@ final class LiveTradesClient
      * @param $writeln ?Closure(string $message): void
      * @noinspection PhpDocSignatureIsNotCompleteInspection */
     public function init(
+        bool $withMessenger,
         string $url = '',
         array $subscribe = [],
         bool $verbose = true,
@@ -52,6 +59,7 @@ final class LiveTradesClient
         ?Closure $writeln = null,
     ): void
     {
+        $this->withMessenger = $withMessenger;
         $this->url = $url ?: Config::LiveTradesUrl;
         $this->subscribe = $subscribe ?: Config::LiveTradesSubscribe;
         $this->writeCb = $write;
@@ -121,13 +129,14 @@ final class LiveTradesClient
         $this->messageCount++;
         $message = $msg->getPayload();
         $trades = $this->getTrades($message);
-        $this->dispatcher->dispatch(new LiveEventsMessageEvent($message, $trades));
+        if (!$this->withMessenger) $this->eventDispatcher->dispatch(new LiveTradesEvent($trades));
+        else $this->messageBus->dispatch(new LiveTradesMessage($trades), [new TransportNamesStamp(Config::LiveTradesTransport)]);
         foreach ($trades as $events) $this->tradesSave += count($events);
 
         if (!$this->verbose && $this->messageCount
             && ($this->messageCount === 100 || $this->messageCount % 1000 === 0)) { // feedback: summary
-            $this->writeln();
-            $this->write('[messages] ' . $this->messageCount . '/' . $this->tradesSave . ' ' . round(memory_get_usage() / 1024 / 1024) . ' MB ', true);
+            $log = '[messages] ' . $this->messageCount . ' (saved: ' . $this->tradesSave . '), memory: ' . round(memory_get_usage() / 1024 / 1024) . ' MB ';
+            $this->writeln($log); //$this->writeln(); $this->write($log, true);
         }
 
         if ($this->messageCount === 1) $this->loop->addTimer(1, fn() => $this->sendSubscribe($conn));
@@ -142,9 +151,9 @@ final class LiveTradesClient
     private function onFulfilled(WebSocket $conn): void {
         $this->writeln('[' . $this->url . ' open]');
         $conn->on('message', function($msg) use ($conn) {
-            try{
+            try {
                 $this->message($msg, $conn);
-            } catch(Throwable $ex){
+            } catch (Throwable $ex) {
                 $this->loop->stop();
                 $this->writeln('[' . $this->url . ' ERROR] ' . $this->verbose ? $ex : $ex->getMessage());
                 throw $ex;

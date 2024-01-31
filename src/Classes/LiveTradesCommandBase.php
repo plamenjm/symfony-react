@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Command;
+namespace App\Classes;
 
+use App\Utils;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+//#[\Symfony\Component\DependencyInjection\Attribute\Exclude]
 abstract class LiveTradesCommandBase extends Command
 {
     protected ?OutputInterface $output = null;
@@ -23,7 +25,7 @@ abstract class LiveTradesCommandBase extends Command
 
     protected function write(string $line, bool $prefix): void
     {
-        $this->output->write((!$prefix ? '' : \App\Utils::dateTimeUTC() . ' ') . $line);
+        $this->output->write((!$prefix ? '' : Utils::dateTimeUTC() . ' ') . $line);
         $this->needsLn = true;
     }
 
@@ -31,7 +33,7 @@ abstract class LiveTradesCommandBase extends Command
     {
         if ($this->needsLn) $this->output->writeln('');
         if (!$line) $this->output->writeln('');
-        else $this->output->writeln(\App\Utils::dateTimeUTC() . ' ' . $line);
+        else $this->output->writeln(Utils::dateTimeUTC() . ' ' . $line);
         $this->needsLn = false;
     }
 }

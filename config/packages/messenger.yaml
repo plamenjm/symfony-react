@@ -15,6 +15,10 @@ framework:
             failed: 'doctrine://default?queue_name=failed'
             # sync: 'sync://'
 
+            # Sync: messenger.yaml, Config::LiveTradesTransport
+            liveTrades:
+                dsn: 'amqp://guest:guest@localhost:5672/%2f/messages'
+
         routing:
             Symfony\Component\Mailer\Messenger\SendEmailMessage: async
             Symfony\Component\Notifier\Message\ChatMessage: async

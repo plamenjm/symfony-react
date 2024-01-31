@@ -5,11 +5,42 @@ Playground - Symfony, SQLite, phpunit; WebSocket; React.js, Chart.js, TypeScript
 
 <details><summary>
 
-### Live Trades frontend - SPA React.js, WebSocket client, live Chart.js
+### Live Trades - Ratchet WebSocket, RabbitMQ AMQP, React.js, Chart.js (live)
 
 </summary>
 
-get events by date/time, subscribe for real-time events (live), back/forward, hour/day/week, aggregation
+Backend: WebSocket client and server with RabbitMQ AMQP message broker.
+Frontend: Subscribe for real-time events (live). Get events log. Aggregate data. Display hour/day/week view.
+
+```
+$ bin/console liveTrades:client
+2024-01-31 08:08:41 [wss://api.bitfinex.com/ws/1 open]
+2024-01-31 08:08:42 [wss://api.bitfinex.com/ws/1 <] {"event": "subscribe", "channel": "trades", "pair": "BTCUSD"}
+2024-01-31 08:08:42 [wss://api.bitfinex.com/ws/1 <] {"event": "subscribe", "channel": "trades", "pair": "BTCEUR"}
+...................................................................................................
+2024-01-31 08:14:07 [messages] 100 (saved: 86), memory: 5 MB
+2024-01-31 09:03:23 [messages] 1000 (saved: 339), memory: 8 MB 
+...
+```
+
+```
+$ bin/console liveTrades:serve
+2024-01-31 08:31:33 [Consuming messages from transport "liveTrades"]
+2024-01-31 08:31:33 [ws://10.0.2.100:8002 listening]
+2024-01-31 08:31:34 [live/887/1 open]
+2024-01-31 08:31:34 [live/887/1 >] {"event": "subscribe", "channel": "trades", "pair": "BTCUSD"}
+2024-01-31 08:31:34 [live/887/1 >] {"event": "subscribe", "channel": "trades", "pair": "BTCEUR"}
+2024-01-31 08:32:11 [log/1029/1 open]
+2024-01-31 08:32:11 [log/1029/1 <] 21 messages (BTCUSD, 2024-01-30 09:00:00/2024-01-31 09:00:01)
+2024-01-31 08:32:11 [log/1029/0 close]
+2024-01-31 08:32:18 [log/1038/1 open]
+2024-01-31 08:32:18 [log/1038/1 <] 12 messages (BTCEUR, 2024-01-31 07:35:00/2024-01-31 08:35:01)
+2024-01-31 08:32:18 [log/1038/0 close]
+...
+2024-01-31 08:54:37 [live/887/0 close]
+```
+
+![image](https://github.com/plamenjm/symfony-react/assets/56994434/fb95b27f-be42-422d-8df4-554dbe5ea248)
 
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/a3d09dc2-0b29-44c9-bbba-69eeaac753c9)
 
@@ -21,20 +52,6 @@ get events by date/time, subscribe for real-time events (live), back/forward, ho
 
 </details>
 
-<details><summary>
-
-### Live Trades backend - PHP/Ratchet WebSocket client and server
-
-</summary>
-
-```
-$ bin/console liveTrades:client
-$ bin/console liveTrades:serve
-```
-
-![image](https://github.com/plamenjm/symfony-react/assets/56994434/718e3445-ce5a-4644-b7d8-aade9264b318)
-
-</details>
 
 <details><summary>
 
@@ -46,6 +63,7 @@ $ bin/console liveTrades:serve
 
 </details>
 
+
 <details><summary>
 
 ### phpunit
@@ -55,6 +73,7 @@ $ bin/console liveTrades:serve
 ![image](https://github.com/plamenjm/symfony-react/assets/56994434/b5f25e40-dd6f-45ca-bbc4-9b2c8c766c72)
 
 </details>
+
 
 <details><summary>
 
@@ -102,15 +121,12 @@ $ npm install --save-dev @faker-js/faker
 $ composer require ratchet/pawl
 $ composer require cboden/ratchet; # from RatchetSymfony7
 $ composer require symfony/event-dispatcher
-
-todo: websocket router
-todo: symfony web security
-todo: symfony db users, authentication
-todo: react state (redux, mobx)
-todo: bootstrap, sass, styled-components
+$ composer require symfony/messenger
+$ composer require symfony/amqp-messenger
 ```
 
 </details>
+
 
 <details><summary>
 
@@ -124,10 +140,12 @@ Helper script for symfony and podman (docker) container.
 Usage: cmd.sh <serve | serve-debug | stop | log-php | dump>
        cmd.sh <watch | dev-server | dev-live-php | dev-live>
        cmd.sh <phpunit $* | phpunit-dump $* | lint>
+       cmd.sh <rabbitmq | liveTrades-serve | liveTrades-client>
        cmd.sh <log-dev | browser | bash $* >
 ```
 
 </details>
+
 
 <details><summary>
 

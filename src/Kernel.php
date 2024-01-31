@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 
-class Kernel extends BaseKernel
+final class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
 
@@ -25,7 +25,7 @@ class Kernel extends BaseKernel
 
         if ($this->container->getParameter('kernel.debug')) {
             if (self::dumpEnableStdErrAndCollect) $this->dumpHandlerPrev = \Symfony\Component\VarDumper\VarDumper::setHandler(function ($var, string $label = null) {
-                \App\Utils::stdErr($var); // to-do: only when dump_destination is not php://stderr
+                Utils::stdErr($var); // to-do: only when dump_destination is not php://stderr
 
                 \App\EventListener\DumpSubscriber::dumpCollect($var);
 

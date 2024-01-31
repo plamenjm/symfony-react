@@ -23,37 +23,48 @@ elif [ "$cmd" == 'stop' ]; then
   "$wrapper" bash "cd $project && symfony server:stop"
 
 elif [ "$cmd" == 'log-php' ]; then
-  exec "$wrapper" bash "cd $project && symfony server:log"; # $ tail -f ~/.symfony5/log/*.log ~/.symfony5/log/*/*.log
+  exec "$wrapper" bash "cd $project && exec symfony server:log"; # $ tail -f ~/.symfony5/log/*.log ~/.symfony5/log/*/*.log
 
 elif [ "$cmd" == 'dump' ]; then
-  exec "$wrapper" bash "cd $project && bin/console server:dump"
+  exec "$wrapper" bash "cd $project && exec bin/console server:dump"
 
 
 
 elif [ "$cmd" == 'watch' ]; then
-  exec "$wrapper" bash "cd $project && npm run watch"
+  exec "$wrapper" bash "cd $project && exec npm run watch"
 
 elif [ "$cmd" == 'dev-server' ]; then
-  exec "$wrapper" bash "cd $project && npm run dev-server"
+  exec "$wrapper" bash "cd $project && exec npm run dev-server"
 
 elif [ "$cmd" == 'dev-live-php' ]; then
-  exec "$wrapper" bash "cd $project && npm run dev-server -- --live-reload"
+  exec "$wrapper" bash "cd $project && exec npm run dev-server -- --live-reload"
 
 elif [ "$cmd" == 'dev-live' ]; then
-  exec "$wrapper" bash "cd $project && staticWatch=false npm run dev-server -- --live-reload"
+  exec "$wrapper" bash "cd $project && staticWatch=false exec npm run dev-server -- --live-reload"
 
 
 
 elif [ "$cmd" == 'phpunit' ]; then
   # php -d memory_limit=-1 bin/phpunit
-  exec "$wrapper" bash "cd $project && bin/phpunit $*"; # --colors=never | less -S
+  "$wrapper" bash "cd $project && bin/phpunit $*"; # --colors=never | less -S
 
 elif [ "$cmd" == 'phpunit-dump' ]; then
-  exec "$wrapper" bash "cd $project && VAR_DUMPER_FORMAT=server bin/phpunit $*"; # --colors=never | less -S
+  "$wrapper" bash "cd $project && VAR_DUMPER_FORMAT=server bin/phpunit $*"; # --colors=never | less -S
 
 elif [ "$cmd" == 'lint' ]; then
-  #exec "$wrapper" bash "cd $project && bin/console lint:container"
-  exec "$wrapper" bash "cd $project && bin/console lint:container && bin/console lint:twig templates/"
+  #"$wrapper" bash "cd $project && bin/console lint:container"
+  "$wrapper" bash "cd $project && bin/console lint:container && bin/console lint:twig templates/"
+
+
+
+elif [ "$cmd" == 'rabbitmq' ]; then
+  "$wrapper" bash "/host/rabbitmq_server-3.12.12/sbin/rabbitmq-server -detached"
+
+elif [ "$cmd" == 'liveTrades:serve' ]; then
+  exec "$wrapper" bash "cd $project && exec bin/console liveTrades:serve"
+
+elif [ "$cmd" == 'liveTrades:client' ]; then
+  exec "$wrapper" bash "cd $project && exec bin/console liveTrades:client"
 
 
 
@@ -78,6 +89,7 @@ else
 Usage: cmd.sh <serve | serve-debug | stop | log-php | dump>
        cmd.sh <watch | dev-server | dev-live-php | dev-live>
        cmd.sh <phpunit $* | phpunit-dump $* | lint>
+       cmd.sh <rabbitmq | liveTrades-serve | liveTrades-client>
        cmd.sh <log-dev | browser | bash $* >
 EOF
 

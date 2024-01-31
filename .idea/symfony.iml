@@ -151,6 +151,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/ralouphie/getallheaders" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/ratchet/pawl" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/ratchet/rfc6455" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/amqp-messenger" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

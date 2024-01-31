@@ -2,13 +2,14 @@
 
 namespace App\Command;
 
+use App\Classes\LiveTradesCommandBase;
 use App\Config;
 use App\Service\LiveTradesClient;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-//use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-//use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 //use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -20,7 +21,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class LiveTradesClientCommand extends LiveTradesCommandBase
 {
     public function __construct(
-        private readonly ?LiveTradesClient $liveTradesClient,
+        private readonly LiveTradesClient $liveTradesClient,
     )
     {
         parent::__construct();
@@ -28,18 +29,18 @@ final class LiveTradesClientCommand extends LiveTradesCommandBase
 
     protected function configure(): void
     {
-        //$this
-        //    ->addArgument('argument', InputArgument::OPTIONAL, 'Argument description')
-        //    ->addOption('option', null, InputOption::VALUE_NONE, 'Option description')
-        //;
+        $this
+            ->addOption('testMessage', 't', InputOption::VALUE_NONE, 'Dispatch a test message to transport "' . Config::LiveTradesTransport . '"')
+            ->addArgument('url', InputArgument::OPTIONAL, '', Config::LiveTradesUrl)
+            //->addArgument('subscribe', InputArgument::OPTIONAL, '', Config::LiveTradesSubscribe)
+        ;
     }
 
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         //$io = new SymfonyStyle($input, $output);
-        //$argument = $input->getArgument('argument');
-        //if ($argument) $io->note(sprintf('You passed an argument: %s', $argument));
-        //if ($input->getOption('option')) $io->error('Optional OOPS!');
+        //if ($input->getArgument('url')) $io->note(sprintf('You passed an url: %s', $input->getArgument('url')));
+        //if ($input->getOption('testMessage')) $io->error('Optional OOPS!');
         //if (!$output instanceof \Symfony\Component\Console\Output\ConsoleOutputInterface)
         //    $output->writeln('...writeln...');
         //else {
@@ -51,11 +52,15 @@ final class LiveTradesClientCommand extends LiveTradesCommandBase
         //$io->success('You have a new command! Now make it your own! Pass --help to see your options.');
 
         parent::execute($input, $output);
-        $url = $input->getArgument('url');
-        $subscribe = Config::LiveTradesSubscribe;
+        if ($input->getOption('testMessage'))
+            $this->liveTradesClient->dispatchEmptyMessage();
+        else {
+            $url = $input->getArgument('url');
+            $subscribe = Config::LiveTradesSubscribe;
 
-        $this->liveTradesClient->init($url, $subscribe, $this->output->isVerbose(), $this->write(...), $this->writeln(...));
-        $this->liveTradesClient->run();
+            $this->liveTradesClient->init(true, $url, $subscribe, $this->output->isVerbose(), $this->write(...), $this->writeln(...));
+            $this->liveTradesClient->run();
+        }
         return Command::SUCCESS;
     }
 }

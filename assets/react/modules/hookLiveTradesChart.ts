@@ -1,7 +1,7 @@
 import React from 'react';
 import {Align, CategoryScale, Chart, ChartData, Colors, Legend, LinearScale, LineElement, LogarithmicScale, PointElement, Title, Tooltip, TooltipItem} from 'chart.js';
 import {ChartJSOrUndefined} from 'react-chartjs-2/dist/types';
-import {LV, TSChartTicks, TSEventsView, TSLogMessage, TSTradeMessage} from '/assets/react/modules/utilsLiveTrades';
+import {LV, TSChartTicks, TSEventsView, TSTradeMessage} from '/assets/react/modules/utilsLiveTrades';
 import {TSStateSetCB} from '/assets/Utils';
 
 
@@ -27,9 +27,7 @@ export function onTooltipTitleCB(refCB: React.MutableRefObject<{
     }
 }
 
-export function onTooltipLabelCB(refCB: React.MutableRefObject<{
-    stateView: string,
-}>) {
+export function onTooltipLabelCB() {
     return (items: TooltipItem<'line'>[]) => {
         const item = (items as unknown as TooltipItem<'line'>) //? bug in react-chartjs-2
         const raw = item?.raw as {y: number, amount: number}
@@ -136,7 +134,7 @@ export function useLiveTradesChart(stateDate: Date, stateView: string, stateSymb
         const label = (stateSymbol !== LV.EnumSymbol.USD ? '' : 'USD') + (stateSymbol !== LV.EnumSymbol.EUR ? '' : 'EUR')
 
         return getChartOptionsData(title, titleY, minY, maxY, stateAxis, ticks, stateEvents.data, label,
-            onTooltipTitleCB(refCB), onTooltipLabelCB(refCB), onAnimationCB(setCalc))
+            onTooltipTitleCB(refCB), onTooltipLabelCB(), onAnimationCB(setCalc))
     }, [stateDate, stateSymbol, stateAxis, ticks, stateEvents.data]) //stateEvents
 
     return {refChart, ...memoChart}
