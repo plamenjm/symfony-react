@@ -33,9 +33,9 @@ export function fakerGetEvents(startIdx: number = 0, days = 7, perDay = 24): TST
 //---
 
 export function useLiveTradesLive(stateUrl: null | string, setUrl: TSStateSetCB<null | string>,
-                                  onWSMessage: (event: MessageEvent, uniqId?: boolean, live?: boolean) => void,
+                                  onWSMessage: (event: MessageEvent, uniqId: boolean, live: boolean) => void,
                                   setMessages: TSStateSetCB<TSLogMessage[]>,
-                                  onMessage: (msg: string | TSLogMessage) => void, onClear: () => void,
+                                  onMessage: (msg: string | TSLogMessage) => void, onClear: (all: boolean) => void,
                                   isClear: boolean, onEvents: () => void) {
     const [stateCloseCode, setCloseCode] = React.useState(0)
     //const [stateStatus, setStatus] = React.useState(ReadyState.UNINSTANTIATED)
@@ -70,7 +70,7 @@ export function useLiveTradesLive(stateUrl: null | string, setUrl: TSStateSetCB<
             setUrl(null)
         else if (readyState === ReadyState.OPEN)
             Config.LiveTradesSubscribe.forEach(subscribe => {
-                onMessage('[' +Config.LiveTradesUrl + ' <] ' + subscribe)
+                if (Config.LiveTradesShowRequests) onMessage('[' +Config.LiveTradesUrl + ' <] ' + subscribe)
                 sendMessage(subscribe)
             })
     }, [readyState])
@@ -82,7 +82,7 @@ export function useLiveTradesLive(stateUrl: null | string, setUrl: TSStateSetCB<
     }, [stateUrl, isClear])
 
     const onConnect = React.useCallback(() => {
-        onClear()
+        onClear(true)
         setUrl(Config.LiveTradesUrl)
     }, [])
 

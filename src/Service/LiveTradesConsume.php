@@ -64,11 +64,15 @@ final class LiveTradesConsume implements EventSubscriberInterface
         $this->writelnCb = $writeln;
     }
 
-    /** @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface */
-    public function run(): void
+    public function run(): bool
     {
-        $receiver = $this->receiverLocator->get(Config::LiveTradesTransport);
+        //try {
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $receiver = $this->receiverLocator->get(Config::LiveTradesTransport);
+        //} catch (Throwable $ex) {
+        //    $this->writeln($ex->getMessage());
+        //    return false;
+        //}
 
         $onWork = function() use ($receiver) { // See: vendor/symfony/messenger/Command/ConsumeMessagesCommand.php
             if ($this->useWorker) {
@@ -86,8 +90,14 @@ final class LiveTradesConsume implements EventSubscriberInterface
         };
 
         $this->writeln('[Consuming messages from transport "' . Config::LiveTradesTransport . '"]');
-        $onWork();
+        //try {
+            $onWork();
+        //} catch (Throwable $ex) {
+        //    $this->writeln($ex->getMessage());
+        //    return false;
+        //}
         $this->loop->addPeriodicTimer(1, $onWork);
+        return true;
     }
 
 

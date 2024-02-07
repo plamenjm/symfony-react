@@ -6,11 +6,6 @@ import {LV, TSChartTicks, TSEventsView, TSLogMessage, TSTradeMessage} from '/ass
 
 //---
 
-const keepMessages = Config.LiveTradesKeepMessages < 2 ? 1 : Config.LiveTradesKeepMessages
-
-
-//---
-
 const isSymbolType = (symbol: string, type: string) =>
     symbol === LV.EnumSymbol.USD && type === LV.EnumEvent.USD
     || symbol === LV.EnumSymbol.EUR && type === LV.EnumEvent.EUR
@@ -79,11 +74,11 @@ export function processEvents(events: TSTradeMessage[],
 //---
 
 export function getMessages(state: TSLogMessage[], allEvents: boolean) {
-    //const keepMessages = 1000 // test
-    return [
-        ...state.slice(0, keepMessages),
-        ...(!allEvents ? [{idx: -1, data: '...'}] : state.slice(keepMessages, -keepMessages).filter(msg => !('data' in msg))),
-        ...(state.length - keepMessages <= 0 ? [] : state.slice(-Math.min(keepMessages, state.length - keepMessages))),
+    const show = Config.LiveTradesShowMessages
+    return (show <= 0) ? state : [
+        ...state.slice(0, show),
+        ...(!allEvents ? [{idx: -1, data: '...'}] : state.slice(show, -show).filter(msg => !('data' in msg))),
+        ...(state.length - show <= 0 ? [] : state.slice(-Math.min(show, state.length - show))),
     ]
 }
 
@@ -139,8 +134,9 @@ export function useLiveTradesEvents(stateDate: Date, setDate: TSStateSetCB<Date>
 
     const cbOnMessage = React.useCallback(onMessageCB(setMessages), [])
 
-    const cbOnClear = React.useCallback(() => {
-        setMessages([])
+    const cbOnClear = React.useCallback((all: boolean) => {
+        if (all) setMessages([])
+        else setMessages(state => state.filter(msg => ('data' in msg)))
         setEvents(LV.EventsInit)
     }, [])
 

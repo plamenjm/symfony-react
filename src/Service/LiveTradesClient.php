@@ -72,7 +72,7 @@ final class LiveTradesClient
 
         $connector = new Connector($this->loop); //, new \React\Socket\Connector(['dns' => '8.8.8.8', 'timeout' => 10], $this->loop),
         $connector($this->url) //, ['protocol1', 'subprotocol2'], ['Origin' => 'http://localhost'],
-        ->then($this->onFulfilled(...), $this->onRejected(...));
+            ->then($this->onFulfilled(...), $this->onRejected(...));
     }
 
 
@@ -122,7 +122,7 @@ final class LiveTradesClient
         }
     }
 
-    private function message(MessageInterface $msg, WebSocket $conn): void {
+    private function onMessage(MessageInterface $msg, WebSocket $conn): void {
         if ($this->verbose) $this->writeln('[' . $this->url . ' >] ' . $msg);
         else if ($this->messageCount && $this->messageCount < 100) $this->write('.', false); // feedback: progress
 
@@ -143,7 +143,7 @@ final class LiveTradesClient
         //if ($this->messageCount > 9) $conn->close(); // test
     }
 
-    private function close($code = null, $reason = null): void {
+    private function onClose($code = null, $reason = null): void {
         $this->writeln('[' . $this->url . ' close] (' . $code . ') ' . $reason);
         if ($code !== 1000) $this->loop->addTimer(3, $this->run(...));
     }
@@ -152,18 +152,18 @@ final class LiveTradesClient
         $this->writeln('[' . $this->url . ' open]');
         $conn->on('message', function($msg) use ($conn) {
             try {
-                $this->message($msg, $conn);
+                $this->onMessage($msg, $conn);
             } catch (Throwable $ex) {
                 $this->loop->stop();
                 $this->writeln('[' . $this->url . ' ERROR] ' . $this->verbose ? $ex : $ex->getMessage());
                 throw $ex;
             }
         });
-        $conn->on('close', fn($code, $reason) => $this->close($code, $reason));
+        $conn->on('close', fn($code, $reason) => $this->onClose($code, $reason));
     }
 
     private function onRejected(Exception $e): void {
-        $this->writeln('[' . $this->url . ' error] ' . $this->verbose ? $e : $e->getMessage());
+        $this->writeln('[' . $this->url . ' error] ' . ($this->verbose ? $e : $e->getMessage()));
         //$this->writeln(print_r($e, true));
         //$this->loop->stop();
     }

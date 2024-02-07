@@ -20,7 +20,7 @@ export function onWSMessageCB(refCB: React.MutableRefObject<{
     onMessage: (msg: (string | TSLogMessage), uniqId?: boolean) => void,
     onEvent: (events?: TSTradeMessage[]) => void, onEvents: () => void,
 }>) {
-    return (event: MessageEvent, uniqId = false, live = false) => {
+    return (event: MessageEvent, uniqId: boolean, live: boolean) => {
         // messages:
         //{ event: 'info', version: '1.1', serverId: '7b5fa247-51ef-4ac9-bd13-3630160aaab7', platform: {status: 1} }
         //[ 12430, [ [ '1494734165-tBTCUSD', 1705081544, 43532, 0.001 ] ] ]
@@ -31,7 +31,7 @@ export function onWSMessageCB(refCB: React.MutableRefObject<{
         const jsonMsg = JSON.parse(event.data)
         const isData = jsonMsg && (typeof jsonMsg[1] === 'object' || jsonMsg[1] === 'te')
         if (!isData) {
-            refCB.current.onMessage('[' + Config.LiveTradesUrl + ' >] ' + event.data)
+            refCB.current.onMessage('[' + (live ? Config.LiveTradesUrl : Config.LiveTradesLogUrl) + ' >] ' + event.data)
             return
         }
 
@@ -73,9 +73,9 @@ function refOnWSMessage(pair: string, ticks: TSChartTicks,
 
 export function useLiveTradesLog(stateDate: Date, stateView: string, stateSymbol: string, ticks: TSChartTicks,
                                  setMessages: TSStateSetCB<TSLogMessage[]>,
-                                 onMessage: (msg: string | TSLogMessage, uniqId?: boolean) => void, onClear: () => void,
+                                 onMessage: (msg: string | TSLogMessage, uniqId?: boolean) => void, onClear: (all: boolean) => void,
                                  onEvent: (events?: TSTradeMessage[]) => void, onEvents: () => void) {
-    const uniqId = false // false: onClear(); true: collect and filter by id
+    const uniqId = false // false: onClear(false); true: collect and filter by id
 
     const [stateUrl, setUrl] = React.useState<null | string>(Config.LiveTradesAutoConnect ? Config.LiveTradesUrl : null)
     const [stateLogUrl, setLogUrl] = React.useState<null | string>(null)
@@ -87,7 +87,7 @@ export function useLiveTradesLog(stateDate: Date, stateView: string, stateSymbol
         [])
 
     const options = React.useMemo(() => (
-        {onMessage: (event: MessageEvent) => cbOnWSMessage(event, uniqId)}
+        {onMessage: (event: MessageEvent) => cbOnWSMessage(event, uniqId, false)}
     ), [])
     const {lastMessage, sendMessage} = useWebSocket<TSRawMessages>(stateLogUrl, options)
 
@@ -99,7 +99,7 @@ export function useLiveTradesLog(stateDate: Date, stateView: string, stateSymbol
 
     React.useLayoutEffect(() => { // request fetch
         if (!stateUrl) return
-        if (!uniqId) onClear()
+        if (!uniqId) onClear(false)
         setLogUrl(Config.LiveTradesLogUrl)
         const from = Math.trunc(ticks[0].value / 1000)
         const to = Math.trunc(ticks.slice(-1)[0].value / 1000) + 1
@@ -112,6 +112,7 @@ export function useLiveTradesLog(stateDate: Date, stateView: string, stateSymbol
             return newState
         })
         const apiLog = `{"event": "log", "channel": "trades", "pair": "${pair.slice(1)}", "from": ${from}, "to": ${to}}`
+        if (Config.LiveTradesShowRequests) onMessage('[' +Config.LiveTradesLogUrl + ' <] ' + apiLog)
         sendMessage(apiLog)
     }, [stateDate, stateView, stateSymbol, ticks, stateUrl])
 

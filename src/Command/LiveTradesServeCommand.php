@@ -62,10 +62,11 @@ final class LiveTradesServeCommand extends LiveTradesCommandBase
         $address = $input->getArgument('listen');
         $this->liveTradesServe->init($port, $address, $this->output->isVeryVerbose(), $this->writeln(...));
 
-        if ($withMessenger)
-            $this->liveTradesConsume->run();
-        else
+        if ($withMessenger) {
+            if (!$this->liveTradesConsume->run()) return Command::FAILURE;
+        } else
             $this->liveTradesClient->run();
+
         $this->liveTradesServe->run();
         //Loop::get()->addPeriodicTimer(0, fn() => $this->loop->stop()); // test
         return Command::SUCCESS;

@@ -44,8 +44,9 @@ export function PageLiveTrades() {
         const refRender = useRef(0)
         Utils.log('Render Page', ++refRender.current, stateEvents.data.length, stateMessages.length)
     }
+
     if (Config.DevLogEnable) React.useLayoutEffect(() => {
-        console.log(stateFetch, stateCalc, stateFetch || stateCalc)
+        console.log('loading', stateFetch, stateCalc, stateFetch || stateCalc)
     }, [stateFetch, stateCalc])
 
     const loading = stateFetch || stateCalc
@@ -59,7 +60,7 @@ export function PageLiveTrades() {
                     <br/>
                     <button disabled={loading || reconnect} onClick={onDisconnect}>Disconnect</button>
                     <br/>
-                    <button onClick={onClear}>Clear</button>
+                    <button onClick={() => onClear(true)}>Clear</button>
                     {/*<br/>
                     <button onClick={() => refChart.current?.update()}>Test Chart API</button>*/}
                 </div>

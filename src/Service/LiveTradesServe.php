@@ -21,7 +21,10 @@ final class LiveTradesServe
 {
     private bool $routeLive = true;
     private bool $routeLog = true;
-    private ?IoServer $server;
+    private string $httpHost = 'localhost'; //''
+
+    private UrlMatcher $urlMatcher;
+    private IoServer $server;
 
     /** @param $writelnCb ?Closure(string $message): void
      * @noinspection PhpDocSignatureIsNotCompleteInspection */
@@ -51,42 +54,40 @@ final class LiveTradesServe
         $this->address = $address ?: $this->params->get('liveTradesListen');
         $this->writelnCb = $writeln;
 
-        if ($this->routeLive && !$this->routeLog) {
-            $this->controllerLive->init('live/', $verbose, $this->writelnCb);
-            $this->ioServer(new WsServer($this->controllerLive));
-            return;
-        } else if (!$this->routeLive && $this->routeLog) {
-            $this->controllerLog->init('log/', $verbose, $this->writelnCb);
-            $this->ioServer(new WsServer($this->controllerLog));
-            return;
-        }
-
-        // See: github.com/ratchetphp/Ratchet
-        // $app = new \Ratchet\App();
-        // $app->route($path, $ws, $allowedOrigins, $httpHost);
-        // $app->run();
-        $routes = new RouteCollection();
-        $matcher = new UrlMatcher($routes, new RequestContext());
-        $this->ioServer(new Router($matcher));
-
-        $httpHost = ''; //'localhost';
-        $requirements = ['Origin' => $httpHost ?: '*'];
-
         $this->controllerLive->init('live/', $verbose, $this->writelnCb);
-        $ws = new WsServer($this->controllerLive);
-        //$ws->enableKeepAlive($this->server->loop);
-        $path = '/live';
-        $routes->add($path, new Route($path, ['_controller' => $ws], $requirements, [], $httpHost, [], ['GET']));
-
         $this->controllerLog->init('log/', $verbose, $this->writelnCb);
-        $ws = new WsServer($this->controllerLog);
-        //$ws->enableKeepAlive($this->server->loop);
-        $path = '/log';
-        $routes->add($path, new Route($path, ['_controller' => $ws], $requirements, [], $httpHost, [], ['GET']));
+
+        if ($this->routeLive && $this->routeLog) {
+            // See: github.com/ratchetphp/Ratchet
+            // $app = new \Ratchet\App();
+            // $app->route($path, $ws, $allowedOrigins, $this->httpHost);
+            // $app->run();
+            $requirements = ['Origin' => $this->httpHost ?: '*'];
+            $routes = new RouteCollection();
+
+            $ws = new WsServer($this->controllerLive);
+            //$ws->enableKeepAlive($this->server->loop);
+            $path = '/live';
+            $routes->add($path, new Route($path, ['_controller' => $ws], $requirements, [], $this->httpHost, [], ['GET']));
+
+            $ws = new WsServer($this->controllerLog);
+            //$ws->enableKeepAlive($this->server->loop);
+            $path = '/log';
+            $routes->add($path, new Route($path, ['_controller' => $ws], $requirements, [], $this->httpHost, [], ['GET']));
+
+            $this->urlMatcher = new UrlMatcher($routes, new RequestContext());
+        }
     }
 
     public function run(): void
     {
+        if ($this->routeLive && $this->routeLog) {
+            $this->ioServer(new Router($this->urlMatcher));
+        } else if (!$this->routeLive) {
+            $this->ioServer(new WsServer($this->controllerLog));
+        } else if (!$this->routeLog) {
+            $this->ioServer(new WsServer($this->controllerLive));
+        }
         $this->writeln('[ws://' . $this->address . ':' . $this->port . ' listening]');
         $this->server->run();
     }

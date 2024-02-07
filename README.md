@@ -1,6 +1,6 @@
 # symfony-react
 
-Playground - Symfony, SQLite, phpunit; WebSocket; React.js, Chart.js, TypeScript
+Playground (Symfony 7, SQLite, phpunit; WebSocket, RabbitMQ; React.js 18, Chart.js, TypeScript)
 
 
 <details><summary>
@@ -82,9 +82,7 @@ $ bin/console liveTrades:serve
 </summary>
 
 ```
-$ symfony new symfony-react
-$ cd symfony-react
-
+$ symfony new symfony-react; cd symfony-react
 $ composer require webapp; # symfony new symfony-react --webapp 
 
 $ composer require symfony/webpack-encore-bundle; # ux-react
