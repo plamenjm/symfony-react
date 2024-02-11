@@ -52,7 +52,8 @@ final class LiveTradesStore implements EventSubscriberInterface
     public function eventHandler(LiveTradesEvent $event)
     {
         $trades = $event->getTrades();
-        foreach($trades as $symbol => $events) // [ 'BTCUSD' => [ '1494734166-tBTCUSD', 1705081553, 43535, 0.0156206 ] ]
-            array_push($this->trades[$symbol], ...$events);
+        foreach($trades as $symbol => $events) { // [ 'BTCUSD' => [ '1494734166-tBTCUSD', 1705081553, 43535, 0.0156206 ] ]
+            if (count($events)) array_push($this->trades[$symbol], ...$events);
+        }
     }
 }

@@ -35,6 +35,7 @@ final class LiveTradesServeCommand extends LiveTradesCommandBase
     protected function configure(): void
     {
         $this
+            ->addOption('serverOnly', 's', InputOption::VALUE_NONE, 'WebSocket server only (without client, without messages)')
             ->addOption('withClient', 'c', InputOption::VALUE_NONE, 'Run with embedded Client (without messenger transport "' . Config::LiveTradesTransport . '")')
             ->addArgument('port', InputArgument::OPTIONAL, '', $this->params->get('liveTradesPort'),
                 [8002, 80])
@@ -48,6 +49,7 @@ final class LiveTradesServeCommand extends LiveTradesCommandBase
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         parent::execute($input, $output);
+        $serverOnly = $input->getOption('serverOnly');
         $withMessenger = !$input->getOption('withClient');
 
         if ($withMessenger)
@@ -62,9 +64,9 @@ final class LiveTradesServeCommand extends LiveTradesCommandBase
         $address = $input->getArgument('listen');
         $this->liveTradesServe->init($port, $address, $this->output->isVeryVerbose(), $this->writeln(...));
 
-        if ($withMessenger) {
+        if (!$serverOnly && $withMessenger) {
             if (!$this->liveTradesConsume->run()) return Command::FAILURE;
-        } else
+        } else if (!$serverOnly)
             $this->liveTradesClient->run();
 
         $this->liveTradesServe->run();

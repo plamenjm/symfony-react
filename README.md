@@ -1,6 +1,6 @@
 # symfony-react
 
-Playground (Symfony 7, SQLite, phpunit; WebSocket, RabbitMQ; React.js 18, Chart.js, TypeScript)
+Playground (Symfony 7, SQLite, phpunit; WebSocket, RabbitMQ, Socket.io; React.js 18, Chart.js, TypeScript)
 
 
 <details><summary>
@@ -9,8 +9,9 @@ Playground (Symfony 7, SQLite, phpunit; WebSocket, RabbitMQ; React.js 18, Chart.
 
 </summary>
 
+Subscribe for real-time events. Get events history.
 Backend: WebSocket client and server with RabbitMQ AMQP message broker.
-Frontend: Subscribe for real-time events (live). Get events log. Aggregate data. Display hour/day/week view.
+Frontend: Live chart. Aggregate data. Display hour/day/week view.
 
 ```
 $ bin/console liveTrades:client
@@ -112,9 +113,10 @@ $ bin/console doctrine:migrations:diff; # bin/console make:migration
 $ bin/console doctrine:migrations:migrate
 $ bin/console dbal:run-sql 'SELECT * FROM ...'
 
-$ npm install --save-dev wscat
 $ npm install react-use-websocket
+$ npm install socket.io-client
 $ npm install react-chartjs-2
+$ npm install --save-dev wscat
 $ npm install --save-dev @faker-js/faker
 $ composer require ratchet/pawl
 $ composer require cboden/ratchet; # from RatchetSymfony7

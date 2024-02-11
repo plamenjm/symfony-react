@@ -4,6 +4,7 @@ import {Constant} from '/assets/Constant';
 import {Config, DevFaker} from '/assets/Config';
 import {TSStateSetCB} from '/assets/Utils';
 import {LV, TSLogMessage, TSRawMessages, TSTradeMessage} from '/assets/react/modules/utilsLiveTrades';
+import {useLiveTradesSocketIO} from '/assets/react/modules/hookLiveTradesSocketIO';
 
 
 //---
@@ -32,66 +33,72 @@ export function fakerGetEvents(startIdx: number = 0, days = 7, perDay = 24): TST
 
 //---
 
-export function useLiveTradesLive(stateUrl: null | string, setUrl: TSStateSetCB<null | string>,
-                                  onWSMessage: (event: MessageEvent, uniqId: boolean, live: boolean) => void,
-                                  setMessages: TSStateSetCB<TSLogMessage[]>,
+export function useLiveTradesLive(setMessages: TSStateSetCB<TSLogMessage[]>,
                                   onMessage: (msg: string | TSLogMessage) => void, onClear: (all: boolean) => void,
-                                  isClear: boolean, onEvents: () => void) {
-    const [stateCloseCode, setCloseCode] = React.useState(0)
-    //const [stateStatus, setStatus] = React.useState(ReadyState.UNINSTANTIATED)
+                                  isClear: boolean, onEvents: () => void,
+                                  onServerMsg: (eventData: string, uniqId: boolean, live: boolean) => void) {
+    const urlLive = Config.LiveTradesSocketIOServer ? Config.LiveTradesSocketIOLive : Config.LiveTradesUrlLive
+
+    const [stateUrlLive, setUrlLive] = React.useState<null | string[]>(Config.LiveTradesAutoConnect ? urlLive : null)
+
+    const [stateCloseCode, setCloseCode] = React.useState(Constant.WebSocketCloseCode)
+    //const [stateReady, setReady] = React.useState(ReadyState.UNINSTANTIATED)
 
     const cbOnClose = React.useCallback((event: CloseEvent) => setCloseCode(event.code),
         [])
 
-    const options = React.useMemo(() => (
-        {onMessage: (event: MessageEvent) => onWSMessage(event, false, true), onClose: cbOnClose}
-    ), [])
-    const {readyState, sendMessage} = useWebSocket<TSRawMessages>(stateUrl,options)
+    const options = React.useMemo(() => ({
+        onMessage: (event: MessageEvent) => onServerMsg(event.data, false, true),
+        onClose: cbOnClose,
+    }), [])
+    const {readyState, sendMessage} = Config.LiveTradesSocketIOServer
+        ? useLiveTradesSocketIO(stateUrlLive, false, true, onServerMsg, setCloseCode)
+        : useWebSocket<TSRawMessages>(stateUrlLive?.join('/') ?? null, options)
 
     React.useLayoutEffect(() => {
-        if (!stateCloseCode || stateCloseCode === 1000) return
+        if (!stateCloseCode || stateCloseCode === Constant.WebSocketCloseCode) return
         onMessage('... reconnect (close code: ' + stateCloseCode + ')')
         const timeout = setTimeout(() => {
-            setUrl(Config.LiveTradesUrl)
+            setUrlLive(urlLive)
             setCloseCode(0)
-        }, 3000);
-        return () => clearTimeout(timeout);
+        }, 3000)
+        return () => clearTimeout(timeout)
     }, [stateCloseCode])
 
     React.useLayoutEffect(() => {
         if (readyState == ReadyState.UNINSTANTIATED) return
 
-        //if (readyState !== stateStatus) {
-        //    setStatus(readyState)
-            onMessage('[' +Config.LiveTradesUrl + ' ' + Constant.WebSocketState[readyState] + ']')
+        //if (readyState !== stateReady) {
+        //    setReady(readyState)
+            onMessage('[' + urlLive.join('/') + ' ' + Constant.WebSocketState[readyState] + ']')
         //}
 
-        if (readyState === ReadyState.CLOSED)
-            setUrl(null)
-        else if (readyState === ReadyState.OPEN)
+        if (readyState === ReadyState.CLOSED) {
+            setUrlLive(null)
+        } else if (readyState === ReadyState.OPEN)
             Config.LiveTradesSubscribe.forEach(subscribe => {
-                if (Config.LiveTradesShowRequests) onMessage('[' +Config.LiveTradesUrl + ' <] ' + subscribe)
+                if (Config.LiveTradesShowRequests) onMessage('[' + urlLive.join('/') + ' <] ' + subscribe)
                 sendMessage(subscribe)
             })
     }, [readyState])
 
     React.useLayoutEffect(() => {
-        if (!DevFaker || stateUrl || !isClear) return
+        if (!DevFaker || stateUrlLive || !isClear) return
         setMessages(fakerGetEvents())
         onEvents()
-    }, [stateUrl, isClear])
+    }, [stateUrlLive, isClear])
 
     const onConnect = React.useCallback(() => {
         onClear(true)
-        setUrl(Config.LiveTradesUrl)
+        setUrlLive(urlLive)
     }, [])
 
     const onDisconnect = React.useCallback(() => {
-        setUrl(null)
-        setCloseCode(0)
+        setUrlLive(null)
+        setCloseCode(Constant.WebSocketCloseCode)
     }, [])
 
-    const isReconnect = ![0, 1000].includes(stateCloseCode)
+    const stateReconnect = stateCloseCode !== Constant.WebSocketCloseCode
 
-    return {stateUrl, onClear, onConnect, onDisconnect, isReconnect}
+    return {stateUrlLive, stateReconnect, onConnect, onDisconnect}
 }

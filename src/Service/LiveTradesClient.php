@@ -129,13 +129,17 @@ final class LiveTradesClient
         $this->messageCount++;
         $message = $msg->getPayload();
         $trades = $this->getTrades($message);
-        if (!$this->withMessenger) $this->eventDispatcher->dispatch(new LiveTradesEvent($trades));
-        else $this->messageBus->dispatch(new LiveTradesMessage($trades), [new TransportNamesStamp(Config::LiveTradesTransport)]);
-        foreach ($trades as $events) $this->tradesSave += count($events);
+        $count = 0;
+        foreach ($trades as $events) $count += count($events);
+        if ($count) {
+            $this->tradesSave += $count;
+            if (!$this->withMessenger) $this->eventDispatcher->dispatch(new LiveTradesEvent($trades));
+            else $this->messageBus->dispatch(new LiveTradesMessage($trades), [new TransportNamesStamp(Config::LiveTradesTransport)]);
+        }
 
-        if (!$this->verbose && $this->messageCount
-            && ($this->messageCount === 100 || $this->messageCount % 1000 === 0)) { // feedback: summary
-            $log = '[messages] ' . $this->messageCount . ' (saved: ' . $this->tradesSave . '), memory: ' . round(memory_get_usage() / 1024 / 1024) . ' MB ';
+        if (!$this->verbose && $this->messageCount && ($this->messageCount === 100 || $this->messageCount % 1000 === 0)) { // feedback: summary
+            $mem = 'memory: ' . round(memory_get_usage() / 1024 / 1024) . ' MB ';
+            $log = '[messages] ' . $this->messageCount . ' (saved: ' . $this->tradesSave . '), ' . $mem;
             $this->writeln($log); //$this->writeln(); $this->write($log, true);
         }
 

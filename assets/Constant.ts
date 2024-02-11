@@ -10,4 +10,5 @@ export const Constant = Object.freeze({
         [ReadyState.CLOSED          ]: 'closed',
         [ReadyState.UNINSTANTIATED  ]: 'uninstantiated',
     },
+    WebSocketCloseCode: 1000 as number,
 })

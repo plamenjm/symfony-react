@@ -28,7 +28,7 @@ final class LiveTradesControllerLog extends LiveTradesControllerBase
         //}
 
         $json = json_decode($msg);
-        if ($json->event === 'log' && $json->channel === 'trades') { // {"event": "log", "channel": "trades", "pair": "BTCUSD", "from": 1705081553, "to": 1705081553}
+        if ($json->event === 'log' && $json->channel === 'trades') { // {event: 'log', channel: 'trades', pair: 'BTCUSD', from: 1705081553, to: 1705081553}
             if (isset($this->liveTradesStore->trades[$json->pair])) {
                 $eventsAll = $this->liveTradesStore->trades[$json->pair]; // [ 'BTCUSD' => [ '1494734166-tBTCUSD', 1705081553, 43535, 0.0156206 ] ]
                 $events = array_filter($eventsAll, fn($event) => $json->from <= $event[1] && $event[1] < $json->to);

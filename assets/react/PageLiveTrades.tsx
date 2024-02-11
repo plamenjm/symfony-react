@@ -2,12 +2,14 @@ import React, {useRef} from 'react';
 import {ChartData} from 'chart.js';
 import {Line as ChartLine} from 'react-chartjs-2';
 import {ChartJSOrUndefined} from 'react-chartjs-2/dist/types';
+import {Constant} from '/assets/Constant';
 import {Config} from '/assets/Config';
 import {Utils} from '/assets/Utils';
 import {Jsx} from '/assets/react/Jsx';
 import {LV} from '/assets/react/modules/utilsLiveTrades';
 import {useLiveTrades} from '/assets/react/modules/hookLiveTrades';
 import {useLiveTradesEvents} from '/assets/react/modules/hookLiveTradesEvents';
+import {useLiveTradesServerMsg} from '/assets/react/modules/hookLiveTradesServerMsg';
 import {useLiveTradesLive} from '/assets/react/modules/hookLiveTradesLive';
 import {useLiveTradesLog} from '/assets/react/modules/hookLiveTradesLog';
 import {useLiveTradesChart} from '/assets/react/modules/hookLiveTradesChart';
@@ -32,10 +34,12 @@ export function PageLiveTrades() {
     const {stateMessages, setMessages, getMessages, onMessage, onClear, stateEvents, onEvent, onEvents, stateCalc, setCalc}
         = useLiveTradesEvents(stateDate, setDate, stateView, stateSymbol, stateAggregate, ticks)
 
-    const {stateUrl, setUrl, onWSMessage, stateFetch} =
-        useLiveTradesLog(stateDate, stateView, stateSymbol, ticks, setMessages, onMessage, onClear, onEvent, onEvents)
-    const {onConnect, onDisconnect, isReconnect} =
-        useLiveTradesLive(stateUrl, setUrl, onWSMessage, setMessages, onMessage, onClear, stateMessages.length === 0, onEvents)
+    const {onServerMsg} =
+        useLiveTradesServerMsg(stateSymbol, ticks, setMessages, onMessage, onEvent, onEvents)
+    const {stateUrlLive, stateReconnect, onConnect, onDisconnect} =
+        useLiveTradesLive(setMessages, onMessage, onClear, stateMessages.length === 0, onEvents, onServerMsg)
+    const {stateFetch} =
+        useLiveTradesLog(stateDate, stateView, stateSymbol, ticks, setMessages, onMessage, onClear, stateUrlLive, onServerMsg)
 
     const {refChart, options, data}
         = useLiveTradesChart(stateDate, stateView, stateSymbol, stateAxis, ticks, stateEvents, setCalc)
@@ -46,19 +50,19 @@ export function PageLiveTrades() {
     }
 
     if (Config.DevLogEnable) React.useLayoutEffect(() => {
-        console.log('loading', stateFetch, stateCalc, stateFetch || stateCalc)
+        console.log('busy', stateFetch, stateCalc, stateFetch || stateCalc)
     }, [stateFetch, stateCalc])
 
-    const loading = stateFetch || stateCalc
-    const reconnect = !stateUrl && !isReconnect
+    const busy = stateFetch || stateCalc
+    const reconnect = !!stateUrlLive || stateReconnect
 
     return (
         <div className='pageContent'>
             <div style={{display: 'flex'}}>
                 <div>
-                    <button disabled={loading || !reconnect} onClick={onConnect}>Connect</button>
+                    <button disabled={busy || reconnect} onClick={onConnect}>Connect</button>
                     <br/>
-                    <button disabled={loading || reconnect} onClick={onDisconnect}>Disconnect</button>
+                    <button disabled={!reconnect} onClick={onDisconnect}>Disconnect</button>
                     <br/>
                     <button onClick={() => onClear(true)}>Clear</button>
                     {/*<br/>
@@ -66,27 +70,27 @@ export function PageLiveTrades() {
                 </div>
                 &nbsp;&nbsp;
                 <div>
-                    <button disabled={loading} onClick={onPrev}>{'<'}</button>
+                    <button disabled={busy} onClick={onPrev}>{'<'}</button>
                     <br/>
-                    <button disabled={loading} onClick={onNext}>{'>'}</button>
+                    <button disabled={busy} onClick={onNext}>{'>'}</button>
                 </div>
                 &nbsp;&nbsp;
                 <div>
-                    <input disabled={loading} {...radioView(LV.EnumView.Hour)}/>
+                    <input disabled={busy} {...radioView(LV.EnumView.Hour)}/>
                     <label {...Jsx.radioLbl(...LV.RBViewHour)}>Hour view</label>
                     <br/>
-                    <input disabled={loading} {...radioView(LV.EnumView.Day)}/>
+                    <input disabled={busy} {...radioView(LV.EnumView.Day)}/>
                     <label {...Jsx.radioLbl(...LV.RBViewDay)}>Day view</label>
                     <br/>
-                    <input disabled={loading} {...radioView(LV.EnumView.Week)}/>
+                    <input disabled={busy} {...radioView(LV.EnumView.Week)}/>
                     <label {...Jsx.radioLbl(...LV.RBViewWeek)}>Week view</label>
                 </div>
                 &nbsp;&nbsp;
                 <div>
-                    <input disabled={loading} {...radioSymbol(LV.EnumSymbol.USD)}/>
+                    <input disabled={busy} {...radioSymbol(LV.EnumSymbol.USD)}/>
                     <label {...Jsx.radioLbl(...LV.RBSymbolUSD)}>USD</label>
                     <br/>
-                    <input disabled={loading} {...radioSymbol(LV.EnumSymbol.EUR)}/>
+                    <input disabled={busy} {...radioSymbol(LV.EnumSymbol.EUR)}/>
                     <label {...Jsx.radioLbl(...LV.RBSymbolEUR)}>EUR</label>
                 </div>
                 &nbsp;&nbsp;
@@ -97,7 +101,7 @@ export function PageLiveTrades() {
                     <input {...radioAxis(LV.EnumAxis.Log)}/>
                     <label {...Jsx.radioLbl(...LV.RBAxisLog)}>Logarithmic</label>
                     <br/>
-                    <input disabled={loading} {...check('agg', stateAggregate)}/>
+                    <input disabled={busy} {...check('agg', stateAggregate)}/>
                     <label htmlFor='agg'>Aggregate</label>
                 </div>
                 &nbsp;&nbsp;

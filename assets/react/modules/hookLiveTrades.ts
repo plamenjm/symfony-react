@@ -7,8 +7,8 @@ import {Config} from '/assets/Config';
 //---
 
 export function chartTicksHour(forDate: Date): TSChartTicks {
-    const date = new Date(forDate)
-    date.setMinutes(Math.trunc(date.getMinutes() / 10) * 10 - 60, 0, 0)
+    const date = new Date(forDate), trunc = 60 / LV.ChartTicks.Hour
+    date.setMinutes(Math.trunc(date.getMinutes() / trunc) * trunc - 60, 0, 0)
     const ticks = Array.from(Array(LV.ChartTicks.Hour + 1))
     ticks.forEach((u, idx) => {
         LV.datePlusTick(date, LV.EnumView.Hour)
@@ -67,7 +67,7 @@ function changeDate(direction: 1 | -1, date: Date, view: string) {
 
 export function useLiveTrades() {
     const [stateDate, setDate] = React.useState(new Date())
-    const [stateView, setView] = React.useState(LV.EnumView.Day)
+    const [stateView, setView] = React.useState(LV.EnumView.Hour)
     const [stateSymbol, setSymbol] = React.useState(LV.EnumSymbol.USD)
     const [stateAxis, setAxis] = React.useState(LV.EnumAxis.Line)
     const [stateAggregate, setAggregate] = React.useState<boolean>(Config.LiveTradesAggregateEvents)
